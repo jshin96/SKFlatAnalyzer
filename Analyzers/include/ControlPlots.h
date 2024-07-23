@@ -12,7 +12,7 @@ public:
   void executeEvent();
 
   bool OS2l, SS2l, TriLep, TetraLep, SB_SS2L, CFlip, ConvCR, FkCR3l; 
-  bool TrigClos;
+  bool TrigClos, PUID;
   bool DblMu, DblEG, MuEG, SglEl;
   bool FakeRun, ConvRun, FlipRun, SystRun, HEMCheck;
   vector<TString> TrigList_DblMu, TrigList_DblEG, TrigList_MuEG, TrigList_SglEl;

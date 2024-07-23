@@ -13,7 +13,7 @@ public:
 
   bool SpecTrig, NoTrig;
   bool ElFR, MuFR;
-  bool LIDOpt, MeasMCFR, MCClosure, CompCheck;
+  bool LIDOpt, MeasMCFR, MCClosure, CompCheck, PUID;
   bool SystRun;
   vector<TString> TrigList_ElFR, TrigList_MuFR, TrigList_DblMu, TrigList_DblEG, TrigList_MuEG;
   TString EraShort;

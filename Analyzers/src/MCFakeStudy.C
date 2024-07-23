@@ -4,7 +4,7 @@ void MCFakeStudy::initializeAnalyzer(){
 
   ElFR=false, MuFR=false;
   LIDOpt=false, MeasMCFR=false, MCClosure=false, CompCheck=false;
-  SystRun=false; 
+  SystRun=false, PUID = false; 
   SpecTrig=false, NoTrig=false;
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("ElFR"))        ElFR        = true; 
@@ -16,6 +16,7 @@ void MCFakeStudy::initializeAnalyzer(){
     if(Userflags.at(i).Contains("NoTrig"))      NoTrig      = true; 
     if(Userflags.at(i).Contains("SpecTrig"))    SpecTrig    = true; 
     if(Userflags.at(i).Contains("SystRun"))     SystRun     = true; 
+    if(Userflags.at(i).Contains("PUID"    )) PUID     = true; 
   }
 
   EraShort = GetEraShort();
@@ -1225,6 +1226,9 @@ void MCFakeStudy::EmulQCDFRMeas(vector<Muon>& MuRawColl, vector<Electron>& ElRaw
     vector<Electron> ElLColl  = SelectElectrons(ElRawColl, ElLID, MinPtEl, 2.5);
     vector<Electron> ElVColl  = SelectElectrons(ElRawColl, ElVID, 10., 2.5);
     vector<Jet>      JetColl  = SelectJets     (JetRawColl, MuLColl, ElVColl, "tight", 25., 2.4, "LVeto");
+    if (PUID) {
+      vector<Jet> JetColl  = SelectJets(JetColl, "LoosePileupJetVeto", 25., 2.4);
+    }
     JetTagging::Parameters param_jets = JetTagging::Parameters(JetTagging::DeepJet, JetTagging::Medium, JetTagging::incl, JetTagging::mujets);
     vector<Jet>      BJetColl = SelBJets       (JetColl, param_jets);
 
@@ -1347,6 +1351,9 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
   vector<Electron> ElLColl  = SelectElectrons(ElRawColl, ElLID, 15., 2.5);
   vector<Electron> ElVColl  = SelectElectrons(ElRawColl, ElVID, 10., 2.5);
   vector<Jet>      JetColl  = SelectJets     (JetRawColl, MuLColl, ElVColl, "tight", 25., 2.4, "LVeto");
+  if (PUID) {
+    vector<Jet> JetColl  = SelectJets(JetColl, "LoosePileupJetVeto", 25., 2.4);
+  }
   JetTagging::Parameters param_jets = JetTagging::Parameters(JetTagging::DeepJet, JetTagging::Medium, JetTagging::incl, JetTagging::mujets);
   vector<Jet>      BJetColl = SelBJets       (JetColl, param_jets);
 

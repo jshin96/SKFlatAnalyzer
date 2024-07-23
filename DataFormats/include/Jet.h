@@ -46,6 +46,7 @@ public:
   void SetTightLepVetoJetID(double b);
   inline bool Pass_tightJetID() const { return j_tightJetID; }
   inline bool Pass_tightLepVetoJetID() const { return j_tightLepVetoJetID; }
+  bool Pass_PileupJetVeto(const TString &wp) const;
 
   bool PassID(TString ID) const;
 

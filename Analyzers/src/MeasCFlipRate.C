@@ -4,7 +4,7 @@ void MeasCFlipRate::initializeAnalyzer(){
 
   All2l=false, SS2l=false, OS2l=false;
   CFlip=false, MCCFRate=false, CFMCClos=false, MDists=false, PTScale=false;
-  FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false; 
+  FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false, PUID = false; 
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("All2l"))      All2l      = true;
     if(Userflags.at(i).Contains("OS2l"))       OS2l       = true;
@@ -18,6 +18,7 @@ void MeasCFlipRate::initializeAnalyzer(){
     if(Userflags.at(i).Contains("ConvRun"))    ConvRun    = true; 
     if(Userflags.at(i).Contains("FlipRun"))    FlipRun    = true; 
     if(Userflags.at(i).Contains("SystRun"))    SystRun    = true; 
+    if(Userflags.at(i).Contains("PUID"    )) PUID     = true; 
   }
 
   DblMu=false, DblEG=false, MuEG=false;
@@ -43,7 +44,7 @@ void MeasCFlipRate::initializeAnalyzer(){
 
   TString SKOutPath=getenv("SKFlatOutputDir"), SKFlatV=getenv("SKFlatV"), SpecDir="TopHNSST/EleOnly/";
   TString FileDir = SKOutPath+"/"+SKFlatV+"/MeasCFlipRate/"+GetEraShort()+"/All2l/MCCFRate/"+SpecDir+"BkdMC/";
-  f_CFR_DY = new TFile(FileDir+"MeasCFlipRate_DYJetsToEE_MiNNLO.root");
+  //f_CFR_DY = new TFile(FileDir+"MeasCFlipRate_DYJetsToEE_MiNNLO.root");
   //f_CFR_TT = new TFile(FileDir+"MeasCFlipRate_TTLL_powheg.root");
 
   outfile->cd();
@@ -102,6 +103,9 @@ void MeasCFlipRate::executeEvent(){
   vector<Jet> jetPreColl = GetAllJets();
   sort(jetPreColl.begin(), jetPreColl.end(), PtComparing);
   vector<Jet> jetColl  = SelectJets(jetPreColl, muonLooseColl, electronVetoColl, "tightLepVeto", 25., 2.4, "LVeto");
+  if (PUID) {
+    vector<Jet> jetColl  = SelectJets(jetColl, "LoosePileupJetVeto", 25., 2.4);
+  }
   vector<Jet> bjetColl = SelBJets(jetColl, param_jets);
 
 

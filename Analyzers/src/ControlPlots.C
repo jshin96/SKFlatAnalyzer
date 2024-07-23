@@ -4,7 +4,7 @@ void ControlPlots::initializeAnalyzer(){
 
   TriLep=false, TetraLep=false, SS2l=false, OS2l=false;
   SB_SS2L=false, CFlip=false, ConvCR=false, FkCR3l=false;
-  TrigClos=false;
+  TrigClos=false, PUID = false;
   FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false, HEMCheck=false; 
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("SS2l"))        SS2l        = true;
@@ -21,6 +21,7 @@ void ControlPlots::initializeAnalyzer(){
     if(Userflags.at(i).Contains("FlipRun"))     FlipRun     = true; 
     if(Userflags.at(i).Contains("SystRun"))     SystRun     = true; 
     if(Userflags.at(i).Contains("HEMCheck"))    HEMCheck    = true; 
+    if(Userflags.at(i).Contains("PUID"    )) PUID     = true; 
   }
   if(FlipRun && !FakeRun) OS2l=true;
 
@@ -149,6 +150,9 @@ void ControlPlots::executeEvent(){
   vector<Jet> jetPreColl = GetAllJets();
   sort(jetPreColl.begin(), jetPreColl.end(), PtComparing);
   vector<Jet> jetColl  = SelectJets(jetPreColl, muonLooseColl, electronVetoColl, "tightLepVeto", 25., 2.4, "LVeto");
+  if (PUID) {
+    vector<Jet> jetColl  = SelectJets(jetColl, "LoosePileupJetVeto", 25., 2.4);
+  }
   vector<Jet> bjetColl = SelBJets(jetColl, param_jets);
 
   Particle vMET_T1xy = GetvMET("PUPPIMETT1xyCorr");
@@ -666,9 +670,10 @@ void ControlPlots::CheckChargeFlip(vector<Muon>& MuTColl, vector<Muon>& MuLColl,
 
 
   int Nj=JetColl.size(), Nb=BJetColl.size();
-  float Mll=-1., PTl1=-1, Etal1=999., PTl2=-1., Etal2=-1., MTW=-1., MET=-1.;
+  float Mll=-1., PTl1=-1, Etal1=999., PTl2=-1., Etal2=-1., MTW=-1., MET=-1., Ptll=-1;
   bool IsOnZ=false, IsBJOrtho=false;
   Mll   = (ElConeColl.at(0)+ElConeColl.at(1)).M();
+  Ptll   = (ElConeColl.at(0)+ElConeColl.at(1)).Pt();
   PTl1  = ElConeColl.at(0).Pt();  Etal1 = ElConeColl.at(0).Eta();
   PTl2  = ElConeColl.at(1).Pt();  Etal2 = ElConeColl.at(1).Eta();
   MTW   = MT(ElConeColl.at(0), vMET);
@@ -694,6 +699,7 @@ void ControlPlots::CheckChargeFlip(vector<Muon>& MuTColl, vector<Muon>& MuLColl,
     FillHist("Etal2"+SelTag+EtaTag+Label, Etal2, newweight, 20, -5., 5., ApplyWVar, SysWgtStrPairList);
     FillHist("MET"+SelTag+EtaTag+Label, MET, newweight, 20, 0., 200., ApplyWVar, SysWgtStrPairList);
     FillHist("MTW"+SelTag+EtaTag+Label, MTW, newweight, 20, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("Ptll"+SelTag+EtaTag+Label, Ptll, newweight, 40, 0., 200., ApplyWVar, SysWgtStrPairList);
   }}
 
 }

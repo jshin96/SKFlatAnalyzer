@@ -3,7 +3,7 @@
 void GenSigStudy::initializeAnalyzer(){
 
   All2l=false, SS2l=false, OS2l=false;
-  TrAccCheck=false, TrRateCheck=false;
+  TrAccCheck=false, TrRateCheck=false, PUID = false;
   FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false; 
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("All2l"))      All2l      = true;
@@ -15,6 +15,7 @@ void GenSigStudy::initializeAnalyzer(){
     if(Userflags.at(i).Contains("ConvRun"))    ConvRun    = true; 
     if(Userflags.at(i).Contains("FlipRun"))    FlipRun    = true; 
     if(Userflags.at(i).Contains("SystRun"))    SystRun    = true; 
+    if(Userflags.at(i).Contains("PUID"    )) PUID     = true; 
   }
 
   DblMu=false, DblEG=false, MuEG=false;
@@ -113,6 +114,9 @@ void GenSigStudy::executeEvent(){
   vector<Jet> jetPreColl = GetAllJets();
   sort(jetPreColl.begin(), jetPreColl.end(), PtComparing);
   vector<Jet> jetColl  = SelectJets(jetPreColl, muonLooseColl, electronVetoColl, "tight", 25., 2.4, "LVeto");
+  if (PUID) {
+    vector<Jet> jetColl  = SelectJets(jetColl, "LoosePileupJetVeto", 25., 2.4);
+  }
   vector<Jet> bjetColl = SelBJets(jetColl, param_jets);
 
 

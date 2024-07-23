@@ -11,7 +11,7 @@ public:
   void executeEvent();
 
   bool All2l, SS2l, OS2l; 
-  bool TrAccCheck, TrRateCheck; 
+  bool TrAccCheck, TrRateCheck, PUID; 
   bool DblMu, DblEG, MuEG;
   bool FakeRun, ConvRun, FlipRun, SystRun;
   vector<TString> TrigList_DblMu, TrigList_DblEG, TrigList_MuEG, TrigList_SglMu, TrigList_SglEl;

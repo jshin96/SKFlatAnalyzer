@@ -17,7 +17,8 @@ IDBase     = 'TopHNT' #'TopHNTIsoIP_POGMID' # TopHNT
 #InputDir   = '/data6/Users/jbhyun/cmssw/TagAndProbe/Electron/tnp_tamsa/results/TopHN_Mu/TrigEffMeas/AbsEta'
 
 #InputDir   = '/data6/Users/jbhyun/cmssw/TagAndProbe/Electron/egm_tnp_analysis/results/EleID/TopHNID/MiNNLO/Final'
-InputDir   = '/data6/Users/jbhyun/cmssw/TagAndProbe/Muon/JinResult/TopHNT/ID/TopHN/powhegMiNNLO/POGDefault/NUM_TopHN_DEN_TrackerMuons'
+#InputDir   = '/data6/Users/jbhyun/cmssw/TagAndProbe/Muon/JinResult/TopHNT/ID/TopHN/powhegMiNNLO/POGDefault/NUM_TopHN_DEN_TrackerMuons'
+InputDir   = '/data6/Users/jbhyun/cmssw/TagAndProbe/TopHN/Muon/JinResult/TopHNT/ID/TopHN/powhegMiNNLO/POGDefault/NUM_TopHN_DEN_TrackerMuons'
 #/data6/Users/jbhyun/cmssw/TagAndProbe/Electron/egm_tnp_analysis/results/EleTrig/TopHNID/MiNNLO/Ele23Leg1_TopHNSST_2018/egammaEffi.txt_EGM2D.root
 InFileName = 'result.root' #'egammaEffi.txt_EGM2D.root'/'efficiency.root'/'result.root'
 ObjType    = 'Muon' # Electron Muon
@@ -37,7 +38,7 @@ for Era in EraList:
       elif 'Leg' in SFType and '/EleID/' in InputDir:
         InFilePath=InFilePath.replace('/EleID/','/EleTrig/')
       else: pass
-
+    """
     if 'ID' in SFType: InFilePath+=IDBase+'_'+Era+'/'+InFileName
     else: InFilePath+=SFType+'_'+IDBase+'_'+Era+'/'+InFileName
 
@@ -51,6 +52,21 @@ for Era in EraList:
       OutFilePath+='TrigEff_'+SFType+'_'+IDBase+'_'+Era+'.root'
       OutFilePath = OutFilePath.replace("Leg2","") 
     else: pass
+    """
+    if 'ID' in SFType: InFilePath+=Era+'/'+InFileName
+    else: InFilePath+=SFType+'_'+Era+'/'+InFileName
+
+    OutFileDir=EraLong+'/ID/'+ObjType+'/'
+    OutFilePath=OutFileDir
+    if 'ID' in SFType: OutFilePath+='IDEff'+'_'+Era+'.root'
+    elif 'Leg1' in SFType:
+      OutFilePath+='TrigEff_'+SFType+'_'+Era+'.root'
+      OutFilePath = OutFilePath.replace("Leg1","") 
+    elif 'Leg2' in SFType:
+      OutFilePath+='TrigEff_'+SFType+'_'+Era+'.root'
+      OutFilePath = OutFilePath.replace("Leg2","") 
+    else: pass
+
 
     if not path.exists(InFilePath):
       print("missing infile path: "+InFilePath)

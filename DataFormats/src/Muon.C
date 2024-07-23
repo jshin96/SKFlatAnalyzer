@@ -144,39 +144,39 @@ bool Muon::PassID(TString ID) const {
   if(ID=="TopHNT"){
     if(! isPOGMedium()        ) return false;
     if(! (MiniRelIso()<0.1)) return false;
-    if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (fabs(dZ())<0.1)  ) return false;
+//    if(! (TrkIso()/Pt()<0.4) ) return false;
+//    if(! (fabs(dZ())<0.1)  ) return false;
     if(! (SIP3D()<3.) ) return false;
     return true;
   }
   if(ID=="TopHNL"){
     if(! isPOGMedium()       ) return false;
     if(! (MiniRelIso()<0.6)  ) return false;
-    if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (SIP3D()<5)         ) return false; 
+//    if(! (TrkIso()/Pt()<0.4) ) return false;
+//    if(! (SIP3D()<5)         ) return false; 
     if(! (fabs(dZ())<0.1)    ) return false;
     return true;
   }
   if(ID=="TopHNLLIsop6NoSIP"){
     if(! isPOGMedium()       ) return false;
     if(! (MiniRelIso()<0.6)  ) return false;
-    if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (fabs(dZ())<0.1)    ) return false;
+//    if(! (TrkIso()/Pt()<0.4) ) return false;
+//    if(! (fabs(dZ())<0.1)    ) return false;
     return true;
   }
   if(ID=="TopHNLLIsop6"){
     if(! isPOGMedium()       ) return false;
     if(! (MiniRelIso()<0.6)  ) return false;
     if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (fabs(dZ())<0.1)    ) return false;
-    if(! (SIP3D()<3)         ) return false;
+//    if(! (fabs(dZ())<0.1)    ) return false;
+//    if(! (SIP3D()<3)         ) return false;
     return true;
   }
   if(ID.BeginsWith("TopHNLLIsop6SIP")){
     if(! isPOGMedium()       ) return false;
     if(! (MiniRelIso()<0.6)  ) return false;
-    if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (fabs(dZ())<0.1)    ) return false;
+//    if(! (TrkIso()/Pt()<0.4) ) return false;
+//    if(! (fabs(dZ())<0.1)    ) return false;
     if     ( ID.Contains("SIP4") ){ if(! (SIP3D()<4) ) return false; }
     else if( ID.Contains("SIP5") ){ if(! (SIP3D()<5) ) return false; }
     else if( ID.Contains("SIP6") ){ if(! (SIP3D()<6) ) return false; }
@@ -188,16 +188,16 @@ bool Muon::PassID(TString ID) const {
   if(ID.BeginsWith("TopHNV")){
     if(! isPOGMedium()       ) return false;
     if(! (MiniRelIso()<0.6)  ) return false;
-    if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (fabs(dZ())<0.1)    ) return false;
+//    if(! (TrkIso()/Pt()<0.4) ) return false;
+//    if(! (fabs(dZ())<0.1)    ) return false;
     return true;
   }
 
   if(ID.Contains("TopHNLForTIsop10_201")){
     if(! isPOGMedium()       ) return false;
     if(! (MiniRelIso()<0.6)  ) return false;
-    if(! (TrkIso()/Pt()<0.4) ) return false;
-    if(! (fabs(dZ())<0.1)    ) return false;
+//    if(! (TrkIso()/Pt()<0.4) ) return false;
+//    if(! (fabs(dZ())<0.1)    ) return false;
     if(! Pass_SIPFakeLoose(ID, "PTCorrBase")) return false;
     return true;
   }

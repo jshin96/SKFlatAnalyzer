@@ -131,6 +131,7 @@ if IsKNU:
 ## Make Sample List
 
 InputSample_Data = ["DoubleMuon", "DoubleEG", "SingleMuon", "SingleElectron", "SinglePhoton", "MuonEG", "EGamma"]
+Skimmed_Data = ["SkimTree_SS2lOR3l_DoubleMuon", "SkimTree_SS2lOR3l_DoubleEG", "SkimTree_SS2lOR3l_SingleMuon", "SkimTree_SS2lOR3l_MuonEG", "SkimTree_SS2lOR3l_EGamma"]
 AvailableDataPeriods = []
 if args.Era == "2016preVFP":
   AvailableDataPeriods = ["B_ver2","C","D","E","F"]
@@ -166,6 +167,15 @@ else:
     elif args.DataPeriod in AvailableDataPeriods:
       InputSamples.append(args.InputSample+":"+args.DataPeriod)
       StringForHash += args.InputSample+":"+args.DataPeriod
+  elif args.InputSample in Skimmed_Data:
+    if args.DataPeriod=="ALL":
+      for period in AvailableDataPeriods:
+        InputSamples.append(args.InputSample+"_"+period)
+        StringForHash += args.InputSample+"_"+period
+    elif args.DataPeriod in AvailableDataPeriods:
+      InputSamples.append(args.InputSample+"_"+args.DataPeriod)
+      StringForHash += args.InputSample+"_"+args.DataPeriod
+    
   else:
     InputSamples.append(args.InputSample)
     StringForHash += args.InputSample
@@ -229,6 +239,7 @@ for InputSample in InputSamples:
     InputSample = tmp.split(":")[0]
     DataPeriod = tmp.split(":")[1]
 
+  
   ## Prepare output
 
   base_rundir = MasterJobDir+InputSample
@@ -602,7 +613,7 @@ FinalOutputPath = args.Outputdir
 if args.Outputdir=="":
   FinalOutputPath = SKFlatOutputDir+'/'+SKFlatV+'/'+args.Analyzer+'/'+args.Era+'/'
   for flag in Userflags:
-    FinalOutputPath += flag+"__"
+    FinalOutputPath += flag+"/"
   if IsDATA:
     FinalOutputPath += '/DATA/'
   if IsSkimTree:

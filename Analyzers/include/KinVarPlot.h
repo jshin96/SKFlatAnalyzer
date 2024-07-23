@@ -17,8 +17,9 @@ public:
 
   bool OS2l, SS2l, TriLep, TetraLep; 
   bool DblMu, DblEG, MuEG;
-  bool FakeRun, ConvRun, FlipRun, SystRun, GenSyst;
+  bool FakeRun, ConvRun, FlipRun, SystRun, GenSyst, PUID;
   bool DiscPlots, VarPlots, EffFlow, GlobFeas, GenMatchedDist, DecCompCheck, DiscCutOpt, DiscTable, DiscCNC, TestPlot;
+  bool NminusMll, Nminuspt, NminusNb, NminusNj, NminusNlj;
   vector<TString> TrigList_DblMu, TrigList_DblEG, TrigList_MuEG;
 
   void MakePlotSS2L(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vector<Muon>& MuVColl, vector<Electron>& ElTColl, vector<Electron>& ElLColl, vector<Electron>& ElVColl,

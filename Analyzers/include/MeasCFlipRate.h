@@ -12,7 +12,7 @@ public:
 
   bool All2l, SS2l, OS2l, CFlip, CFMCClos, MCCFRate, MDists, PTScale; 
   bool DblMu, DblEG, MuEG;
-  bool FakeRun, ConvRun, FlipRun, SystRun;
+  bool FakeRun, ConvRun, FlipRun, SystRun, PUID;
   vector<TString> TrigList_DblMu, TrigList_DblEG, TrigList_MuEG;
 
 

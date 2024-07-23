@@ -12,7 +12,7 @@ public:
   void executeEvent();
 
   bool ElFR, MuFR, MeasFR, MeasPU, PrVal, METMTWCut;
-  bool DblMu, DblEG, MuEG, SglMu, SglEl;
+  bool DblMu, DblEG, MuEG, SglMu, SglEl, PUID;
   bool SystRun, ConePtCut;
   vector<TString> TrigList_ElFR, TrigList_MuFR;
 

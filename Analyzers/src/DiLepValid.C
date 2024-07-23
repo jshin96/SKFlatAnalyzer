@@ -3,7 +3,7 @@
 void DiLepValid::initializeAnalyzer(){
 
   SglLTrig=false, DiLTrig=false, ElEl=false, MuMu=false, ElMu=false, SF2L=false; 
-  DiLIncl=false, DiLBJet =false;
+  DiLIncl=false, DiLBJet =false, PUID = false;
   HEMCheck=false, SystRun=false;
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("SglLTrig")) SglLTrig = true; 
@@ -16,6 +16,7 @@ void DiLepValid::initializeAnalyzer(){
     if(Userflags.at(i).Contains("DiLBJet" )) DiLBJet  = true; 
     if(Userflags.at(i).Contains("HEMCheck")) HEMCheck = true;
     if(Userflags.at(i).Contains("SystRun" )) SystRun  = true; 
+    if(Userflags.at(i).Contains("PUID"    )) PUID     = true; 
   }
 
   DblMu=false, DblEG=false, MuEG=false, SglEl=false;
@@ -120,6 +121,9 @@ void DiLepValid::executeEvent(){
   vector<Jet> jetPreColl = GetAllJets();
   sort(jetPreColl.begin(), jetPreColl.end(), PtComparing);
   vector<Jet> jetColl  = SelectJets(jetPreColl, muonLooseColl, electronVetoColl, "tightLepVeto", 25., 2.4, "LVeto");
+  if (PUID) {
+    vector<Jet> jetColl  = SelectJets(jetColl, "LoosePileupJetVeto", 25., 2.4);
+  }
   vector<Jet> bjetColl = SelBJets(jetColl, param_jets);
 
   Particle vMET = GetvMET("PUPPIMETT1"); //"T1"

@@ -3,7 +3,7 @@
 void FakeRateMeas::initializeAnalyzer(){
 
   ElFR=false, MuFR=false, MeasFR=false, MeasPU=false, PrVal=false, METMTWCut=false;
-  SystRun=false, ConePtCut=false; 
+  SystRun=false, ConePtCut=false, PUID = false;
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("ElFR"))      ElFR      = true; 
     if(Userflags.at(i).Contains("MuFR"))      MuFR      = true; 
@@ -13,6 +13,7 @@ void FakeRateMeas::initializeAnalyzer(){
     if(Userflags.at(i).Contains("PrVal"))     PrVal     = true; 
     if(Userflags.at(i).Contains("ConePtCut")) ConePtCut = true; 
     if(Userflags.at(i).Contains("SystRun"))   SystRun   = true; 
+    if(Userflags.at(i).Contains("PUID"    )) PUID     = true; 
   }
 
   DblMu=false, DblEG=false, MuEG=false, SglMu=false, SglEl=false;
@@ -96,8 +97,8 @@ void FakeRateMeas::executeEvent(){
   else if(ElFR and electronPreColl.size()>0) PreCutPass=true;
   if(!PreCutPass) return;
 
-
   TString IDSSLabel = "SS"; float PTminMu = MuFR && ConePtCut? 5.:10.; 
+  //                                                           *Shouldn't this be 15 not 5?              
   TString MuTID="TopHNT", MuLID="TopHNL";
   TString ElTID="TopHNSST", ElLID="TopHNSSL_"+GetEraShort(), ElVID="TopHNL_"+GetEraShort();
   vector<Muon>     muonTightColl     = SelectMuons(muonPreColl, MuTID, PTminMu, 2.4);
@@ -111,6 +112,9 @@ void FakeRateMeas::executeEvent(){
   vector<Jet> jetPreColl = GetAllJets();
   sort(jetPreColl.begin(), jetPreColl.end(), PtComparing);
   vector<Jet> jetColl  = SelectJets(jetPreColl, muonLooseColl, electronVetoColl, "tightLepVeto", 25., 2.4, "LVeto");
+  if (PUID) {
+    vector<Jet> jetColl  = SelectJets(jetColl, "LoosePileupJetVeto", 25., 2.4);
+  }
   vector<Jet> bjetColl = SelBJets(jetColl, param_jets);
 
 
@@ -191,6 +195,9 @@ void FakeRateMeas::executeEvent(){
         TString TmpMuLID = LIDList.at(iID);
         vector<Muon> MuLColl = SelectMuons(muonPreColl, TmpMuLID, PTminMu, 2.4);
         vector<Jet>  JetColl = SelectJets(jetPreColl, MuLColl, electronVetoColl, "tightLepVeto", 25., 2.4, "LVeto");
+        if (PUID) {
+          vector<Jet> JetColl  = SelectJets(JetColl, "LoosePileupJetVeto", 25., 2.4);
+        }
         vector<Jet> BJetColl = SelBJets(JetColl, param_jets);
         for(unsigned int iOpt=0; iOpt<OptList.size(); iOpt++){
           TString Opt = OptList.at(iOpt);
@@ -316,7 +323,13 @@ void FakeRateMeas::executeEvent(){
           TString TmpMuLID = LIDList.at(iID);
           vector<Muon> MuLColl   = SelectMuons(muonPreColl, TmpMuLID, PTminMu, 2.4);
           vector<Jet>  JetColl   = SelectJets(jetPreColl, MuLColl, electronVetoColl, "tightLepVeto", 25., 2.4, "LVeto");
+          if (PUID) {
+            vector<Jet> JetColl  = SelectJets(JetColl, "LoosePileupJetVeto", 25., 2.4);
+          }
           vector<Jet>  Jet20Coll = SelectJets(jetPreColl, MuLColl, electronVetoColl, "tightLepVeto", 20., 2.4, "LVeto");
+          if (PUID) {
+            vector<Jet> Jet20Coll  = SelectJets(Jet20Coll, "LoosePileupJetVeto", 25., 2.4);
+          }
           vector<Jet>  BJetColl  = SelBJets(JetColl, param_jets);
           for(unsigned int iOpt=0; iOpt<OptList.size(); iOpt++){
             TString Opt = OptList.at(iOpt);

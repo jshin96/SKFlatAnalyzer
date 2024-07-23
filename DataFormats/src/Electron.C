@@ -223,8 +223,8 @@ bool Electron::PassID(TString ID) const{
     if(! passMVAID_noIso_WP90()          ) return false;
     if(! (MiniRelIso()<0.1)              ) return false;
     if(! (SIP3D()<4.)                    ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL() ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<2)              ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -234,8 +234,8 @@ bool Electron::PassID(TString ID) const{
     if(! passMVAID_noIso_WPLoose()       ) return false;
     if(! (MiniRelIso()<0.4)              ) return false;
     if(! (SIP3D()<4.)                    ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<2)              ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -245,8 +245,8 @@ bool Electron::PassID(TString ID) const{
     if(! passMVAID_noIso_WP90()          ) return false;
     if(! (MiniRelIso()<0.1)              ) return false;
     if(! (SIP3D()<4)                     ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<2)              ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -257,8 +257,8 @@ bool Electron::PassID(TString ID) const{
     if(! passMVAID_noIso_WP90()          ) return false;
     if(! (MiniRelIso()<0.4)              ) return false;
     if(! (SIP3D()<4)                     ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<2)              ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -269,8 +269,8 @@ bool Electron::PassID(TString ID) const{
     if(! passMVAID_noIso_WPLoose()       ) return false;
     if(! (MiniRelIso()<0.4)              ) return false;
     if(! (SIP3D()<4.)                    ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL() ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL() ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<2)              ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -279,8 +279,8 @@ bool Electron::PassID(TString ID) const{
   }
   if(ID.Contains("TopHNSSLFixLMVAIsop4NoSIP_201") or ID.Contains("TopHNSSL_201")){
     if(! (MiniRelIso()<0.4)              ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<=1)             ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -296,8 +296,8 @@ bool Electron::PassID(TString ID) const{
   }
   if(ID.Contains("TopHNL_201")){
     if(! (MiniRelIso()<0.4)              ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<=1)             ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -313,8 +313,8 @@ bool Electron::PassID(TString ID) const{
   if(ID=="TopHNV"){
     if(! (MVANoIso()  >-0.8 or passMVAID_noIso_WP90()) ) return false;
     if(! (MiniRelIso()< 0.4 )          ) return false;
-    if(! (fabs(dZ())  < 0.1 )          ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL() ) return false;
+//    if(! (fabs(dZ())  < 0.1 )          ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL() ) return false;
     if(! PassConversionVeto()          ) return false;
     if(! (NMissingHits()<2)            ) return false;
     if(! (fabs(Eta())<2.5)             ) return false;
@@ -322,8 +322,8 @@ bool Electron::PassID(TString ID) const{
   }
   if(ID=="TopHNSS_Isop4NoSIPMVA"){
     if(! (MiniRelIso()<0.4)              ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<=1)             ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
@@ -332,8 +332,8 @@ bool Electron::PassID(TString ID) const{
   }
   if(ID=="TopHN_Isop4NoSIPMVA"){
     if(! (MiniRelIso()<0.4)              ) return false;
-    if(! (fabs(dZ())<0.1)                ) return false;
-    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
+//    if(! (fabs(dZ())<0.1)                ) return false;
+//    if(! Pass_CaloIdL_TrackIdL_IsoVL()   ) return false;
     if(! PassConversionVeto()            ) return false;
     if(! (NMissingHits()<=1)             ) return false;
     if(! (fabs(Eta())<2.5)               ) return false;
