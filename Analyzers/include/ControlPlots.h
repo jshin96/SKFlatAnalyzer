@@ -12,9 +12,10 @@ public:
   void executeEvent();
 
   bool OS2l, SS2l, TriLep, TetraLep, SB_SS2L, CFlip, ConvCR, FkCR3l, PUVETO, POGEl, PTShift, NoPURW; 
-  bool TrigClos, CFCorr;
+  bool TrigClos, CFCorr, tighterZ, highST, lowJ, BJ;
   bool DblMu, DblEG, MuEG, SglEl;
   bool FakeRun, ConvRun, FlipRun, SystRun, HEMCheck, SigLike;
+  bool FkCorr10, FkCorr20, FkCorr25, FkCorr30, ConeCorr, FineBin, FineBinWJ, MatchMuElPt, MatchLowMuElPt;
   vector<TString> TrigList_DblMu, TrigList_DblEG, TrigList_MuEG, TrigList_SglEl;
 
 

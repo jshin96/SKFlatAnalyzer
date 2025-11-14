@@ -19,7 +19,8 @@ public:
   bool OS2l, SS2l, TriLep, TetraLep; 
   bool DblMu, DblEG, MuEG,SglMu, SglEG, SingleTrigger, BDTCR;
   bool FakeRun, ConvRun, FlipRun, SystRun, GenSyst, PUVETO, ReverseBDT, POGEl, CFCorr;
-  bool DiscPlots, VarPlots, EffFlow, GlobFeas, GenMatchedDist, DecCompCheck, DiscCutOpt, DiscTable, DiscCNC, TestPlot, BDTVal, UnFlipped, OrSingle;
+  bool DiscPlots, VarPlots, EffFlow, GlobFeas, GenMatchedDist, DecCompCheck, DiscCutOpt, DiscTable, DiscCNC, TestPlot, BDTVal, UnFlipped, OrSingle, ZVeto;
+  bool FkCorrApply, MatchMuElPt,  MatchLowMuElPt, LowPtMu, ConeCorr, FineBin, FineBinWJ;
   vector<TString> TrigList_DblMu, TrigList_DblEG, TrigList_MuEG, TrigList_SglEG,TrigList_SglMu;
 
   void MakePlotSS2L(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vector<Muon>& MuVColl, vector<Electron>& ElTColl, vector<Electron>& ElLColl, vector<Electron>& ElVColl,
@@ -46,8 +47,6 @@ public:
                   vector<Jet>& JetColl, vector<Jet>& BJetColl, vector<Jet>& rawJetColl, JetTagging::Parameters& param_jets, Particle& vMET, Event& Ev, float weight, TString Label);
 
 
-
-
   void InitializeTreeVars();
   void InitializeReader(TMVA::Reader* ThisReader, TString Option);
   void PlotParameters(TString Label);
@@ -59,6 +58,7 @@ public:
   float GetDataFakeWeight(vector<Muon>& MuColl, vector<Electron>& ElColl, vector<Jet>& rawbjetColl,
                           TString MuTID, TString ElTID, TString MuFRKey, TString ElFRKey, TString Opt);
   float GetCFRWeight(vector<Electron>& ElColl, TString Option);
+  float GetCFRWeight(vector<Muon>& ElColl, TString Option);
   float GetCFRAndSF(float VarX, float VarY, TString Key, TString Opt);
 
   int   GetGenLepInfo(vector<Electron>& ElColl, vector<Muon>& MuColl, TString Option="");
@@ -69,8 +69,11 @@ public:
 
   vector<Gen> truthColl;
   Float_t NjPre, NbPre, NljPre;
-  Float_t Nj, Nb, HEMFrac;
-  Float_t Ptl1, Ptl2, MET, HT, MET_Removed, MET_Corrected, MET_Corrected_Up, MET_Corrected_Down;
+  Float_t Nj, Nb, HEMFrac, ST;
+  Float_t Ptl1, Ptl2, MET, HT, MET_Removed, MET_Corrected, MET_Corrected_Up, MET_Corrected_Down, Etal1, Etal2;
+  Float_t Ptl1_up, Ptl2_up, Ptl1_down, Ptl2_down;
+  Float_t MuEn_up, MuEnTr_up, MuEn_down, MuEnTr_down;
+  Float_t ElEn_up, ElEnTr_up, ElEn_down, ElEnTr_down;
   vector<int> GenJet_Matches;
   int HEM_Remove;
   Float_t dRll;

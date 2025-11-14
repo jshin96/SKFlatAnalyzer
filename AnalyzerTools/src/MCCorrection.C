@@ -1541,8 +1541,13 @@ double MCCorrection::PileupJetVeto_MCCorr(const TString &type, const TString &wp
 
   double value = this_hist->GetBinContent(bin);
   double error = this_hist->GetBinError(bin);
-
-  double out = value + double(sys) * error;
+  double out = value;
+  if(sys<0){
+      out = value - error;
+  }
+  else if (sys>0){
+      out = value + error;
+  }
   if (out <= 0.)
     out = 0.0001;
   if (out >= 1. && !type.Contains("SF"))

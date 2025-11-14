@@ -85,12 +85,16 @@ public:
   inline double MiniAODPt() const {return j_MiniAODPt;}
   inline double MiniAODTunePPt() const {return j_MiniAODTunePPt;}
 
+
   void SetMomentumScaleUpDown(double pt_up, double pt_down);
   inline double MomentumShift(int s) const {
     if(s==0) return Pt();
     else if(s>0) return j_MomentumScaleUp;
     else         return j_MomentumScaleDown;
   }
+
+  inline double UncorrectedPt() const { return j_unCorrPt;}
+  void SetUncorrectedPt(double d);
 
   void SetTuneP4(double pt, double pt_err, double eta, double phi, double q);
   inline Particle TuneP4() const {return j_TuneP4;}
@@ -131,6 +135,7 @@ private:
   double j_TunePPtError;
   double j_MVA, j_lowptMVA, j_softMVA;
   int j_trackerLayers;
+  double j_unCorrPt;
 
   ULong64_t j_filterbits;
   ULong64_t j_pathbits;

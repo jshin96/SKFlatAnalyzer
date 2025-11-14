@@ -4,8 +4,16 @@ void ControlPlots::initializeAnalyzer(){
 
   TriLep=false, TetraLep=false, SS2l=false, OS2l=false;
   SB_SS2L=false, CFlip=false, ConvCR=false, FkCR3l=false;
-  TrigClos=false, POGEl = false, CFCorr = false;
+  TrigClos=false, POGEl = false, CFCorr = false, FineBin = false, FineBinWJ=false;
   FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false, HEMCheck=false, SigLike = false, PTShift = false, NoPURW = false; 
+  FkCorr10 = false;
+  FkCorr20 = false;
+  FkCorr25 = false;
+  FkCorr30 = false;
+  ConeCorr = false;
+  MatchMuElPt = false;
+  MatchLowMuElPt = false;
+  tighterZ = false, highST = false, lowJ = false, BJ = false;
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("SS2l"))        SS2l        = true;
     if(Userflags.at(i).Contains("TriLep"))      TriLep      = true;
@@ -26,6 +34,19 @@ void ControlPlots::initializeAnalyzer(){
     if(Userflags.at(i).Contains("SigLike"))     SigLike     = true;
     if(Userflags.at(i).Contains("PTShift"))     PTShift     = true;
     if(Userflags.at(i).Contains("NoPURW"))      NoPURW      = true;
+    if(Userflags.at(i).Contains("FkCorr10"))    FkCorr10    = true;
+    if(Userflags.at(i).Contains("FkCorr20"))    FkCorr20    = true;
+    if(Userflags.at(i).Contains("FkCorr25"))    FkCorr25    = true;
+    if(Userflags.at(i).Contains("FkCorr30"))    FkCorr30    = true;
+    if(Userflags.at(i).Contains("tighterZ"))    tighterZ    = true;
+    if(Userflags.at(i).Contains("highST"))      highST      = true;
+    if(Userflags.at(i).Contains("lowJ"))        lowJ        = true;
+    if(Userflags.at(i).Contains("BJ"))          BJ          = true;
+    if(Userflags.at(i).Contains("ConeCorr"))    ConeCorr    = true;
+    if(Userflags.at(i).Contains("FineBin"))     FineBin    = true;
+    if(Userflags.at(i).Contains("FineBinWJ"))     FineBinWJ    = true;
+    if(Userflags.at(i).Contains("MatchMuElPt"))    MatchMuElPt    = true;
+    if(Userflags.at(i).Contains("MatchLowMuElPt"))    MatchLowMuElPt    = true;
   }  
   if(FlipRun && !FakeRun) OS2l=true;
 
@@ -71,8 +92,19 @@ void ControlPlots::initializeAnalyzer(){
   TString FileDir_FkEl = AnalyzerPath+"/data/"+SKFlatV+"/"+GetEra()+"/FakeRate/DataFR/ElFR/";
   TString FileDir_FkMu = AnalyzerPath+"/data/"+SKFlatV+"/"+GetEra()+"/FakeRate/DataFR/MuFR/";
   TString FileDir_CF = AnalyzerPath+"/data/"+SKFlatV+"/"+GetEra()+"/CFRate/";
-  FRFile_El  = new TFile(FileDir_FkEl+"FR_"+GetEraShort()+".root");
-  FRFile_Mu  = new TFile(FileDir_FkMu+"FR_"+GetEraShort()+".root");
+  if(FineBin){
+    FRFile_El  = new TFile(FileDir_FkEl+"FineBin_FR_"+GetEraShort()+".root");
+    FRFile_Mu  = new TFile(FileDir_FkMu+"FineBin_FR_"+GetEraShort()+".root");
+  }
+  if(FineBinWJ){
+    FRFile_El  = new TFile(FileDir_FkEl+"FineBin_WJ_FR_"+GetEraShort()+".root"); 
+    FRFile_Mu  = new TFile(FileDir_FkMu+"FineBin_WJ_FR_"+GetEraShort()+".root");
+  }
+  else{
+    FRFile_El  = new TFile(FileDir_FkEl+"Original_FR_"+GetEraShort()+".root");
+    FRFile_Mu  = new TFile(FileDir_FkMu+"Original_FR_"+GetEraShort()+".root");
+  }
+
   CFRFile = new TFile(FileDir_CF+"CFRateVar.root");
 
   InitializeTreeVars();
@@ -197,7 +229,7 @@ void ControlPlots::executeEvent(){
     //if(MCSample.Contains("TT") and MCSample.Contains("powheg")) truthColl = GetGens();
     //w_TopPtRW = mcCorr->GetTopPtReweight(truthColl);
     sf_mID   = GetMuonSF(muonTightColl, MuTID, "ID");
-    sf_mIso   = GetMuonSF(muonTightColl, "TopHNTIsoIP_POGMID", "Iso");
+//    sf_mIso   = GetMuonSF(muonTightColl, "TopHNTIsoIP_POGMID", "Iso");
     sf_eReco = GetElectronSF(electronLooseColl, "", "Reco");
     sf_eID   = GetElectronSF(electronTightColl, ElTID, "ID");
     sf_B   = mcCorr->GetBTaggingReweight_1a(jetColl, param_jets);
@@ -725,13 +757,13 @@ void ControlPlots::CheckChargeFlip(vector<Muon>& MuTColl, vector<Muon>& MuLColl,
 
 ///////////////// signal like jet seletion
   if(SigLike && BJetColl.size()<1) return;
-  if(SigLike && JetColl.size() <3) return;
+//  if(SigLike && JetColl.size() <3) return;
 /////////////////////////
 
   float newweight = weight*MCCFSF;
 
   vector<Electron> ElConeColl; vector<Muon> MuConeColl;
-  if(FakeRun){
+  if(FakeRun  && !ConeCorr){
     for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
       Electron TmpEl(ElTColl.at(ie));
       float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -871,19 +903,19 @@ void ControlPlots::CheckChargeFlip(vector<Muon>& MuTColl, vector<Muon>& MuLColl,
     FillHist("Etal2"+SelTag+EtaTag+Label, Etal2, newweight, 20, -5., 5., ApplyWVar, SysWgtStrPairList);
     FillHist("MET"+SelTag+EtaTag+Label, MET, newweight, 20, 0., 200., ApplyWVar, SysWgtStrPairList);
     FillHist("MTW"+SelTag+EtaTag+Label, MTW, newweight, 20, 0., 200., ApplyWVar, SysWgtStrPairList);
-    if(SigLike){
-      InitializeTreeVars();
-      SetVarSS2L(MuConeColl, MuLColl, MuVColl, ElConeColl, ElLColl, ElVColl, JetColl, BJetColl, vMET, newweight, "");
-      for(unsigned int im=0; im<MNStrList.size(); im++){
-        bool Is2E = Label.Contains("_2E"), Is2M = Label.Contains("_2M");
-        TString MVATagStr_Mu = "BDTG_MN"+MNStrList.at(im)+"_Mu";
-        TString MVATagStr_El = "BDTG_MN"+MNStrList.at(im)+"_El";
-        float MVAvalue_Mu = Is2M? MVAReader->EvaluateMVA(MVATagStr_Mu):999.;
-        float MVAvalue_El = Is2E? MVAReader->EvaluateMVA(MVATagStr_El):999.;
-        if(Is2M) FillHist("BDTG_Mu_MN"+MNStrList.at(im)+SelTag+EtaTag+Label, MVAvalue_Mu, newweight, 40, -1., 1.);
-        if(Is2E) FillHist("BDTG_El_MN"+MNStrList.at(im)+SelTag+EtaTag+Label, MVAvalue_El, newweight, 40, -1., 1.);
-      }
-    }
+ //   if(SigLike){
+//      InitializeTreeVars();
+//      SetVarSS2L(MuConeColl, MuLColl, MuVColl, ElConeColl, ElLColl, ElVColl, JetColl, BJetColl, vMET, newweight, "");
+//      for(unsigned int im=0; im<MNStrList.size(); im++){
+//        bool Is2E = Label.Contains("_2E"), Is2M = Label.Contains("_2M");
+//        TString MVATagStr_Mu = "BDTG_MN"+MNStrList.at(im)+"_Mu";
+//        TString MVATagStr_El = "BDTG_MN"+MNStrList.at(im)+"_El";
+//        float MVAvalue_Mu = Is2M? MVAReader->EvaluateMVA(MVATagStr_Mu):999.;
+//        float MVAvalue_El = Is2E? MVAReader->EvaluateMVA(MVATagStr_El):999.;
+//        if(Is2M) FillHist("BDTG_Mu_MN"+MNStrList.at(im)+SelTag+EtaTag+Label, MVAvalue_Mu, newweight, 40, -1., 1.);
+//        if(Is2E) FillHist("BDTG_El_MN"+MNStrList.at(im)+SelTag+EtaTag+Label, MVAvalue_El, newweight, 40, -1., 1.);
+//      }
+//    }
   }}
 
 }
@@ -913,7 +945,7 @@ void ControlPlots::CFShiftCheck(vector<Muon>& MuTColl, vector<Muon>& MuLColl, ve
   float newweight = weight*MCCFSF;
 
   vector<Electron> ElConeColl; vector<Muon> MuConeColl;
-  if(FakeRun){
+  if(FakeRun && !ConeCorr){
     for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
       Electron TmpEl(ElTColl.at(ie));
       float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -1072,7 +1104,7 @@ void ControlPlots::CheckCR4l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vecto
   if( NElT==2 && Qtot_El!=0 ) return;
 
   vector<Electron> ElConeColl; vector<Muon> MuConeColl;
-  if(FakeRun){
+  if(FakeRun && !ConeCorr){
     for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
       Electron TmpEl(ElTColl.at(ie));
       float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -1188,10 +1220,18 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
   if( !(NMuT==NMuV and NElT==NElV) ) return;
   if( NLepT!=3 ) return;
   bool PassTrAcc=false, PassTrAcc_MM=false, PassTrAcc_EE=false, PassTrAcc_EM=false;
-  if( NMuT>1 && MuTColl.at(0).Pt()>20 && MuTColl.at(1).Pt()>10 ) PassTrAcc_MM=true;
+  if (MatchMuElPt) {
+    if( NMuT>1 && MuTColl.at(0).Pt()>25 && MuTColl.at(1).Pt()>15 ) PassTrAcc_MM=true;
+  }
+  else if (MatchLowMuElPt){ 
+    if( NMuT>1 && MuTColl.at(0).Pt()>20 && MuTColl.at(1).Pt()>15 ) PassTrAcc_MM=true;
+  }
+  else{
+    if( NMuT>1 && MuTColl.at(0).Pt()>20 && MuTColl.at(1).Pt()>10 ) PassTrAcc_MM=true;
+  }
   if( NElT>1 && ElTColl.at(0).Pt()>25 && ElTColl.at(1).Pt()>15 ) PassTrAcc_EE=true;
   if( NElT>0 && NMuT>0 && ElTColl.at(0).Pt()>25 && MuTColl.at(0).Pt()>10 ) PassTrAcc_EM=true;
-  if( NElT>0 && NMuT>0 && ElTColl.at(0).Pt()>15 && MuTColl.at(0).Pt()>25 ) PassTrAcc_EM=true;
+  if( NElT>0 && NMuT>0 && ElTColl.at(0).Pt()>15 && MuTColl.at(0).Pt()>20 ) PassTrAcc_EM=true;
   if(PassTrAcc_MM){
     for(unsigned int im1=0; im1<MuTColl.size(); im1++){
     for(unsigned int im2=im1+1; im2<MuTColl.size(); im2++){
@@ -1205,7 +1245,10 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
   if( NMuT==2 && Qtot_Mu!=0 ) return;
   if( NElT==2 && Qtot_El!=0 ) return;
   FillHist("CutFlow", 4., weight, 20, 0., 20.);
-  if( BJetColl.size()>0 ) return;
+  if ( !BJ && BJetColl.size()>0 ) return;
+  else if (BJ && BJetColl.size()<1 ) return;
+  if (highST && GetMET2ST(ElTColl, MuTColl, JetColl, vMET) < 20) return;
+  if (lowJ && JetColl.size() > 2) return;
   FillHist("CutFlow", 5., weight, 20, 0., 20.);
 
   if(HEMCheck){
@@ -1220,7 +1263,7 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
   }
 
   vector<Electron> ElConeColl; vector<Muon> MuConeColl;
-  if(FakeRun){
+  if(FakeRun && !ConeCorr){
     for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
       Electron TmpEl(ElTColl.at(ie));
       float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -1242,6 +1285,9 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
   float MOSSF_Z=0., MTW=0., MOSSF1=0., MOSSF2=0., M3l=0.;
   float dRZFk=-1, dEtaZFk=-1;
   bool  IsFkHEMReg=false;
+  TString Tot_Label = Label;
+  if((NMuT==2 && NElT==1) || (NMuT==0 && NElT==3)){Tot_Label = "_FkEl"+Label;}
+  if((NMuT==1 && NElT==2) || (NMuT==3 && NElT==0)){Tot_Label = "_FkMu"+Label;}
   if(NMuT==2 && NElT==1){
     if( !( PassTrAcc_MM && Ev.PassTrigger(TrigList_DblMu) ) ) return; //TrSF2L
     Label     = "_2M1E"+Label;
@@ -1341,7 +1387,10 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
   else return;
 
   if(MOSSF1<12 or ((NMuT>2 or NElT>2) and MOSSF2<12)) return;
-  bool OnZ=fabs(MOSSF_Z-91.2)<10.;
+  bool OnZ = fabs(MOSSF_Z-91.2)<10.;
+  if (tighterZ) {
+    OnZ = fabs(MOSSF_Z-91.2)<2.;
+  }
   //if(M3l<91.2+15.) return;
 
   if(!IsDATA){
@@ -1360,10 +1409,10 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
    // for(int shift=-30.0; shift<30; shift++){
     if(B_Overlap){
       if(NMuT==3 or NMuT==1){
-        if (GetEraShort() == "2018") { weight *= 0.84;}
-        else if (GetEraShort() == "2017") { weight *= 0.84;}
-        else if (GetEraShort() == "2016a") { weight *= 0.85;}
-        else if (GetEraShort() == "2016b") { weight *= 0.85;}
+        if (GetEraShort() == "2018") { weight *= 0.94;}
+        else if (GetEraShort() == "2017") { weight *= 0.96;}
+        else if (GetEraShort() == "2016a") { weight *= 0.97;}
+        else if (GetEraShort() == "2016b") { weight *= 0.96;}
       }
       else if(NElT==3 or NElT==1){
         if (GetEraShort() == "2018") { weight *= 0.86;}
@@ -1392,7 +1441,26 @@ void ControlPlots::CheckFkCR3l(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
     FillHist("NCnt"+SelTag+Label, dEtaZFk, weight, 1, 0., 1., ApplyWVar, SysWgtStrPairList);
     FillHist("NPV"+SelTag+Label, nPV, weight, 80, 0., 80., ApplyWVar, SysWgtStrPairList);
     if(IsFkHEMReg) FillHist("NCntHEMFk"+SelTag+Label, 0., weight, 1, 0., 1., ApplyWVar, SysWgtStrPairList);
-  
+
+    FillHist("M3l"+SelTag+Tot_Label, M3l, weight, 50, 0., 500., ApplyWVar, SysWgtStrPairList);
+    FillHist("MOSSF1"+SelTag+Tot_Label, MOSSF1, weight, 40, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("MOSSF2"+SelTag+Tot_Label, MOSSF2, weight, 40, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("PTl1_Z"+SelTag+Tot_Label, PTl1_Z, weight, 40, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("PTl2_Z"+SelTag+Tot_Label, PTl2_Z, weight, 40, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("PTl_Fk"+SelTag+Tot_Label, PTl_Fk, weight, 40, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("Etal1_Z"+SelTag+Tot_Label, Etal1_Z, weight, 20, -5., 5., ApplyWVar, SysWgtStrPairList);
+    FillHist("Etal2_Z"+SelTag+Tot_Label, Etal2_Z, weight, 20, -5., 5., ApplyWVar, SysWgtStrPairList);
+    FillHist("Etal_Fk"+SelTag+Tot_Label, Etal_Fk, weight, 20, -5., 5., ApplyWVar, SysWgtStrPairList);
+    FillHist("MOSSF_Z"+SelTag+Tot_Label, MOSSF_Z, weight, 30, 60., 120., ApplyWVar, SysWgtStrPairList);
+    FillHist("Nj"+SelTag+Tot_Label, JetColl.size(), weight, 10, 0., 10., ApplyWVar, SysWgtStrPairList);
+    FillHist("Nb"+SelTag+Tot_Label, BJetColl.size(), weight, 5, 0., 5., ApplyWVar, SysWgtStrPairList);
+    FillHist("MET"+SelTag+Tot_Label, vMET.Pt(), weight, 20, 0., 200., ApplyWVar, SysWgtStrPairList);
+    FillHist("MTW"+SelTag+Tot_Label, MTW, weight, 20, 0., 200., ApplyWVar, SysWgtStrPairList); 
+    FillHist("dRZFk"+SelTag+Tot_Label, dRZFk, weight, 25, 0., 5., ApplyWVar, SysWgtStrPairList);
+    FillHist("dEtaZFk"+SelTag+Tot_Label, dEtaZFk, weight, 25, 0., 5., ApplyWVar, SysWgtStrPairList);
+    FillHist("NCnt"+SelTag+Tot_Label, dEtaZFk, weight, 1, 0., 1., ApplyWVar, SysWgtStrPairList);
+    FillHist("NPV"+SelTag+Tot_Label, nPV, weight, 80, 0., 80., ApplyWVar, SysWgtStrPairList);
+    if(IsFkHEMReg) FillHist("NCntHEMFk"+SelTag+Tot_Label, 0., weight, 1, 0., 1., ApplyWVar, SysWgtStrPairList);
   }
 }
 
@@ -1430,7 +1498,7 @@ void ControlPlots::CheckConvCR(vector<Muon>& MuTColl, vector<Muon>& MuLColl, vec
   if( BJetColl.size()>0 ) return;
 
   vector<Electron> ElConeColl; vector<Muon> MuConeColl;
-  if(FakeRun){
+  if(FakeRun && !ConeCorr){
     for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
       Electron TmpEl(ElTColl.at(ie));
       float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -1591,7 +1659,7 @@ void ControlPlots::MakePlotSS2L(vector<Muon>& MuTColl, vector<Muon>& MuLColl, ve
       FillHist("NJPreCut"+Label+"_2M", JetColl.size(), weight, 10, 0., 10.);
     if(JetColl.size() <3) return;
 
-    if(FakeRun){
+    if(FakeRun && !ConeCorr){
       for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
         Electron TmpEl(ElTColl.at(ie));
         float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -1636,7 +1704,7 @@ void ControlPlots::MakePlotSS2L(vector<Muon>& MuTColl, vector<Muon>& MuLColl, ve
       FillHist("NJPreCut"+Label+"_2E", JetColl.size(), newweight, 10, 0., 10.);
     if(JetColl.size() <3) return;
 
-    if(FakeRun){
+    if(FakeRun && !ConeCorr){
       for(unsigned int ie=0; ie<ElTColl.size(); ie++){ 
         Electron TmpEl(ElTColl.at(ie));
         float RelIso = ElTColl.at(ie).MiniRelIso();
@@ -2106,10 +2174,15 @@ float ControlPlots::GetDataFakeWeight(vector<Muon>& MuColl, vector<Electron>& El
 //    weight*=-FR/(Eff_mID-FR);
     NLepLNotT++;
   }
-  if (GetEraShort() == "2018" && Overlap_Mu) { weight *= 0.84;}
-  else if (GetEraShort() == "2017" && Overlap_Mu) { weight *= 0.84;}
-  else if (GetEraShort() == "2016a" && Overlap_Mu) { weight *= 0.85;}
-  else if (GetEraShort() == "2016b" && Overlap_Mu) { weight *= 0.85;}
+  float FkCorr = 0.0; 
+  if (FkCorr10) {FkCorr=0.10;}
+  if (FkCorr20) {FkCorr=0.20;}
+  if (FkCorr25) {FkCorr=0.25;}
+  if (FkCorr30) {FkCorr=0.30;}
+  if (GetEraShort() == "2018" && Overlap_Mu) { weight *= (0.94-FkCorr);}
+  else if (GetEraShort() == "2017" && Overlap_Mu) { weight *= (0.96-FkCorr);}
+  else if (GetEraShort() == "2016a" && Overlap_Mu) { weight *= (0.97-FkCorr);}
+  else if (GetEraShort() == "2016b" && Overlap_Mu) { weight *= (0.96-FkCorr);}
 
   for(unsigned int ie=0; ie<ElColl.size(); ie++){
     if(ElColl.at(ie).PassID(ElTID)) continue; 
@@ -2126,10 +2199,10 @@ float ControlPlots::GetDataFakeWeight(vector<Muon>& MuColl, vector<Electron>& El
 //    weight*=-FR/(Eff_eID-FR);
     NLepLNotT++;
   }
-  if (GetEraShort() == "2018" && Overlap_El) { weight *= 0.86;}
-  else if (GetEraShort() == "2017" && Overlap_El) { weight *= 0.81;}
-  else if (GetEraShort() == "2016a" && Overlap_El) { weight *= 0.86;}
-  else if (GetEraShort() == "2016b" && Overlap_El) { weight *= 0.85;}     
+  if (GetEraShort() == "2018" && Overlap_El) { weight *= (0.86-FkCorr);}
+  else if (GetEraShort() == "2017" && Overlap_El) { weight *= (0.81-FkCorr);}
+  else if (GetEraShort() == "2016a" && Overlap_El) { weight *= (0.86-FkCorr);}
+  else if (GetEraShort() == "2016b" && Overlap_El) { weight *= (0.85-FkCorr);}     
   if(NLepLNotT==0) weight=0.;
 
   return weight;

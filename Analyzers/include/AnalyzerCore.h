@@ -195,6 +195,7 @@ public:
   std::vector<FatJet> FatJetsVetoLeptonInside(const std::vector<FatJet>& jets, const std::vector<Electron>& els, const std::vector<Muon>& mus, double dR=0.8);
   std::vector<Jet> JetsAwayFromPhoton(const std::vector<Jet>& jets, const std::vector<Photon>& photons, double mindr);
   Particle AddFatJetAndLepton(const FatJet& fatjet, const Lepton& lep);
+  Particle UpdateMETSyst(TString param, const Particle& METv, std::vector<Muon> muons, std::vector<Electron> electrons, std::vector<Electron> electrons_uncorr);
 
   //==== GenMatching
 
@@ -232,6 +233,16 @@ public:
                 double weight,
                 int n_binx, double *xbins,
                 int n_biny, double *ybins);
+  void FillHist(TString histname,
+                double value_x, double value_y,
+                double weight,
+                int n_binx, double x_min, double x_max,
+                int n_biny, double *ybins);
+  void FillHist(TString histname,
+                double value_x, double value_y,
+                double weight,
+                int n_binx, double *xbins,
+                int n_biny, double y_min, double y_max);
   void FillHist(TString histname,
 		double value_x, double value_y, double value_z,
 		double weight,
@@ -299,6 +310,8 @@ public:
   float GetKFactor();
   float GetBRWeight();
   float GetGenFilterEffCorr();
+  float GetMET2ST(std::vector<Electron> electrons, std::vector<Muon> muons, std::vector<Jet> jets,  Particle met);
+  float GetST(std::vector<Electron> electrons, std::vector<Muon> muons, std::vector<Jet> jets,  Particle met);
   bool  IsHEMIssueRun();
   bool  IsHEMIssueReg(Particle& Particle);
   bool  IsHEMCRReg(Particle& Particle, TString Option);

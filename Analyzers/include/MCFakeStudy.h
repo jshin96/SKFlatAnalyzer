@@ -14,7 +14,8 @@ public:
   bool SpecTrig, NoTrig;
   bool ElFR, MuFR;
   bool LIDOpt, MeasMCFR, MCClosure, CompCheck;
-  bool SystRun;
+  bool SystRun, FineBin, FinerBin;
+  bool FkCorr10, FkCorr20, FkCorr25, FkCorr30, FkCorr5, FkCorr15,MatchLowMuElPt, SkipOverlap;
   vector<TString> TrigList_ElFR, TrigList_MuFR, TrigList_DblMu, TrigList_DblEG, TrigList_MuEG;
   TString EraShort;
 

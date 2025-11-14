@@ -4,11 +4,13 @@ void MeasCFlipRate::initializeAnalyzer(){
 
   All2l=false, SS2l=false, OS2l=false;
   CFlip=false, MCCFRate=false, CFMCClos=false, MDists=false, PTScale=false;
-  FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false; 
+  FakeRun=false, ConvRun=false, FlipRun=false, SystRun=false, MuRun=false, ElRun=false; 
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("All2l"))      All2l      = true;
     if(Userflags.at(i).Contains("OS2l"))       OS2l       = true;
     if(Userflags.at(i).Contains("SS2l"))       SS2l       = true;
+    if(Userflags.at(i).Contains("MuRun"))      MuRun      = true;
+    if(Userflags.at(i).Contains("ElRun"))      ElRun      = true;
     if(Userflags.at(i).Contains("CFlip"))      CFlip      = true;
     if(Userflags.at(i).Contains("CFMCClos"))   CFMCClos   = true;
     if(Userflags.at(i).Contains("MDists"))     MDists     = true;
@@ -26,16 +28,32 @@ void MeasCFlipRate::initializeAnalyzer(){
   else if(DataStream.Contains("DoubleEG"))   DblEG=true;
   else if(DataYear==2018 and DataStream.Contains("EGamma")) DblEG=true;
 
-  if(DataYear==2016){
-    TrigList_DblEG.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+//  if(DataYear==2016){
+//    TrigList_DblEG.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+//  }
+//  if(DataYear==2017){
+//    TrigList_DblEG.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+//  }
+//  if(DataYear==2018){
+//    TrigList_DblEG.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+//  }
+//
+  if(GetEraShort()=="2016a"){
+    TrigList_DblMu = {"HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v"};
+    TrigList_DblEG = {"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"};
   }
-  if(DataYear==2017){
-    TrigList_DblEG.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+  else if(GetEraShort()=="2016b"){
+    TrigList_DblMu = {"HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v", "HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v"};
+    TrigList_DblEG = {"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"};
   }
-  if(DataYear==2018){
-    TrigList_DblEG.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+  else if(DataYear==2017){
+    TrigList_DblMu = {"HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v"};
+    TrigList_DblEG = {"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v"};
   }
-
+  else if(DataYear==2018){
+    TrigList_DblMu = {"HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v"};
+    TrigList_DblEG = {"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v"};
+  }
   //Set up the tagger map only for the param settings to be used.
   vector<JetTagging::Parameters> jtps;
   jtps.push_back( JetTagging::Parameters(JetTagging::DeepJet, JetTagging::Medium, JetTagging::incl, JetTagging::mujets) );
@@ -64,7 +82,8 @@ void MeasCFlipRate::executeEvent(){
   FillHist("CutFlow", 0., weight, 20, 0., 20.);
 
   bool PassTrig=false;
-  if(All2l or SS2l or OS2l){ PassTrig = ev.PassTrigger(TrigList_DblEG); }
+  if((All2l or SS2l or OS2l) and ElRun) { PassTrig = ev.PassTrigger(TrigList_DblEG); }
+  else if((All2l or SS2l or OS2l) and MuRun) { PassTrig = ev.PassTrigger(TrigList_DblMu); }
   if(!PassTrig) return;
   FillHist("CutFlow", 1., weight, 20, 0., 20.);
   if(!PassMETFilter()) return;
@@ -81,7 +100,7 @@ void MeasCFlipRate::executeEvent(){
     else if(NPreMu==2 and SumCharge(muonPreColl)!=0) PreCutPass=true;
     else if(NPreEl==2 and SumCharge(electronPreColl)!=0) PreCutPass=true;
   }
-  if((All2l or OS2l) && (NPreMu+NPreEl)>1 && NPreEl>0) PreCutPass=true;
+  if((All2l or OS2l) && (((NPreMu+NPreEl)>1 && NPreEl>0) || ((NPreMu+NPreEl)>1 && NPreMu>0))) PreCutPass=true;
   
   if(!PreCutPass) return;
 
@@ -114,14 +133,15 @@ void MeasCFlipRate::executeEvent(){
   bool EventCand = false;
   if(All2l or SS2l or OS2l){
     EventCand = (muonTightColl.size()+electronTightColl.size())==2;
-    if(MCCFRate or CFMCClos or MDists or PTScale) EventCand = EventCand && electronTightColl.size()>0;
+    if((MCCFRate or CFMCClos or MDists or PTScale) and ElRun) EventCand = EventCand && electronTightColl.size()>0;
+    if((MCCFRate or CFMCClos or MDists or PTScale) and MuRun) EventCand = EventCand && muonTightColl.size()>0;
   }
 
   float w_TopPtRW = 1., w_Prefire = 1., sf_Trig = 1., w_FR=1.;
   float sf_MuTk = 1., sf_MuID = 1., sf_MuIso = 1., sf_ElReco = 1., sf_ElID = 1., sf_BTag = 1.;
   if((!IsDATA) and EventCand){
     //w_TopPtRW = mcCorr->GetTopPtReweight(truthColl);
-    //sf_MuID   = GetMuonSF(muonTightColl, "TopHNID_TkMu", "ID");
+    sf_MuID   = GetMuonSF(muonTightColl, MuTID, "ID");
     sf_ElReco = GetElectronSF(electronTightColl, "", "Reco");
     sf_ElID   = GetElectronSF(electronTightColl, ElTID, "ID");
     sf_BTag   = mcCorr->GetBTaggingReweight_1a(jetColl, param_jets);
@@ -158,6 +178,7 @@ void MeasCFlipRate::GetMassDists(vector<Muon>& MuTColl, vector<Muon>& MuLColl, v
   int NMuT=MuTColl.size(), NElT=ElTColl.size(), NMuL=MuLColl.size(), NElL=ElLColl.size(), NMuV=MuVColl.size(), NElV=ElVColl.size();
   bool IsSS2l=false;  double Mll=-1.;
   if( FakeRun      and weight==0.  ) return; 
+  if(ElRun){
   if( !( NElT==2   and NMuT==0 ) ) return;
   if( !(NMuT==NMuL and NElT==NElL) ) return;
   if( !(NMuT==NMuV and NElT==NElV) ) return;
@@ -168,7 +189,7 @@ void MeasCFlipRate::GetMassDists(vector<Muon>& MuTColl, vector<Muon>& MuLColl, v
     if( !(Mll>60. && Mll<120.) ) return;
   }
   else return;
-
+  
   if(IsSS2l) Label="_SS"+Label;
   else       Label="_OS"+Label;
 
@@ -233,6 +254,85 @@ void MeasCFlipRate::GetMassDists(vector<Muon>& MuTColl, vector<Muon>& MuLColl, v
         if(IdxFlipped==(int) ie) FillHist("NCntCF_App2Bin2"+Label, TmpBinIndex2, weight*CFSF2, Nbins1D+1, 0., Nbins1D+1);
       }
     }
+  }
+  }
+  if(MuRun){
+  if( !( NElT==0   and NMuT==2 ) ) return;
+  if( !(NMuT==NMuL and NElT==NElL) ) return;
+  if( !(NMuT==NMuV and NElT==NElV) ) return;
+  if(NMuT==2){
+    if( MuTColl.at(0).Charge()==MuTColl.at(1).Charge()  ) IsSS2l=true;
+    if(!(MuTColl.at(0).Pt()>25 && MuTColl.at(1).Pt()>15)) return;
+    Mll = (MuTColl.at(0)+MuTColl.at(1)).M();
+    if( !(Mll>60. && Mll<120.) ) return;
+  }
+  else return;
+  
+  if(IsSS2l) Label="_SS"+Label;
+  else       Label="_OS"+Label;
+
+  int IdxFlipped=-1;
+  float CFSF1=1., CFSF2=1.;
+  vector<TString> IterStrList = {"_It1", "_It2", "_It3", "_It4", "_It5", "_It6"}; //{"_It1", "_It2", "_It3", "_It4", "_It5", "_It6"};
+  if( (!IsDATA) ){
+    int NFk=0, NFlip=0, NCv=0;
+    for(unsigned int ie=0; ie<MuTColl.size(); ie++){
+      Muon* Mu(&MuTColl.at(ie));
+      int LepType = GetLeptonType_JH(MuTColl.at(ie), truthColl);
+      if(LepType<0 && LepType>-5) NFk++;
+      else if(LepType<-4) NCv++;
+      else if(LepType>0){
+        int Idx_Closest    = GenMatchedIdx(*Mu,truthColl); 
+        int IdxType_NearMu = LepType>3? GetPrElType_InSameSCRange(Idx_Closest, truthColl, "IdxType"):Idx_Closest;
+        int Idx_NearMu     = LepType>3? IdxType_NearMu/10:Idx_Closest;
+        if(Mu->Charge()*truthColl.at(Idx_NearMu).PID()>0){
+          NFlip++; IdxFlipped=ie;
+//          for(unsigned int it=0; it<IterStrList.size(); it++){
+//            CFSF1 *= GetCFRSF(*Mu, "App2Bin1"+IterStrList.at(it)); CFSF2 *= GetCFRSF(*Mu, "App2Bin2"+IterStrList.at(it));
+            //printf("%s, %f %f\n", IterStrList.at(it).Data(), CFSF1, CFSF2);
+//          }
+        }
+      } 
+    }
+    if( !(NFk==0 && NCv==0)  ) return;
+    if(   IsSS2l && NFlip==0 ) return;
+  }
+
+  vector<float> fEtaEdges   = {0., 1.5, 2.5};
+  vector<float> PTEdges     = {15., 35., 50., 200.};
+  vector<float> fEtaEdges1D = {0., 0.8, 1.5, 2., 2.5};
+  for(unsigned int ie=0; ie<MuTColl.size(); ie++){
+    float PT=MuTColl.at(ie).Pt(), fEta=fabs(MuTColl.at(ie).Eta());
+    int Nbins = (fEtaEdges.size()-1)*(PTEdges.size()-1), Nbins1D = fEtaEdges1D.size()-1;
+    int TmpBinIndex1=0, TmpBinIndex2=0;
+    for(unsigned int ieta=0; ieta<fEtaEdges.size()-1; ieta++){
+    for(unsigned int ipt=0 ; ipt<PTEdges.size()-1; ipt++){
+      if( !(fEta>=fEtaEdges.at(ieta) && fEta<fEtaEdges.at(ieta+1)) ) continue;
+      if( !(  PT>=PTEdges.at(ipt)    &&   PT<PTEdges.at(ipt+1)   ) ) continue;
+        TmpBinIndex1 = ieta*(PTEdges.size()-1)+ipt+1;
+    }}
+    for(unsigned int ieta=0; ieta<fEtaEdges1D.size()-1; ieta++){
+      if( !(fEta>=fEtaEdges1D.at(ieta) && fEta<fEtaEdges1D.at(ieta+1)) ) continue;
+        TmpBinIndex2 = ieta+1;
+    }
+
+    if(TmpBinIndex1!=0){
+      TString TmpBinIdxStr1 = TString::Itoa(TmpBinIndex1,10);
+      FillHist("Mll_App2Bin1_"+TmpBinIdxStr1+Label, Mll, weight*CFSF1, 60, 60., 120.);
+      if(!IsDATA){
+        FillHist("NCnt_App2Bin1"+Label, TmpBinIndex1, weight*CFSF1, Nbins+1, 0., Nbins+1);
+        if(IdxFlipped==(int) ie) FillHist("NCntCF_App2Bin1"+Label, TmpBinIndex1, weight*CFSF1, Nbins+1, 0., Nbins+1);
+      }
+    }
+    if(TmpBinIndex2!=0){
+      TString TmpBinIdxStr2 = TString::Itoa(TmpBinIndex2,10);
+      FillHist("Mll_App2Bin2_"+TmpBinIdxStr2+Label, Mll, weight*CFSF2, 60, 60., 120.);
+      if(!IsDATA){
+        FillHist("NCnt_App2Bin2"+Label, TmpBinIndex2, weight*CFSF2, Nbins1D+1, 0., Nbins1D+1);
+        if(IdxFlipped==(int) ie) FillHist("NCntCF_App2Bin2"+Label, TmpBinIndex2, weight*CFSF2, Nbins1D+1, 0., Nbins1D+1);
+      }
+    }
+  }
   }
 }
 
@@ -322,9 +422,37 @@ void MeasCFlipRate::MeasMCCFRate(vector<Muon>& MuTColl, vector<Muon>& MuLColl, v
 {
   if(IsDATA) return;
   vector<double> PtBinEdges   = {15., 25., 35., 50., 100., 200.};
+  if (MuRun){PtBinEdges = {10., 20., 30., 50., 100., 200.};};
   vector<double> EtaBinEdges  = {-2.5, -2., -1.47, -0.8, 0., 0.8, 1.47, 2., 2.5};
   vector<double> fEtaBinEdges = {0., 0.8, 1.47, 2., 2.5};
-
+  if(MuRun){
+  for(unsigned int im=0; im<MuTColl.size(); im++){
+    Muon* Mu(&MuTColl.at(im));
+    bool IsFlipped=false;
+    int MuType = GetLeptonType_JH(*Mu, truthColl);
+    if(MuType<0 or MuType==3) continue;
+    else{
+      int Idx_Closest    = GenMatchedIdx(*Mu,truthColl); 
+      int IdxType_NearMu = MuType>3? GetPrElType_InSameSCRange(Idx_Closest, truthColl, "IdxType"):Idx_Closest;
+      int Idx_NearMu     = MuType>3? IdxType_NearMu/10:Idx_Closest;
+      if(Mu->Charge()*truthColl.at(Idx_NearMu).PID()>0){ IsFlipped=true; }
+    } 
+  
+    double PT = Mu->Pt(), Eta = Mu->Eta(), fEta = fabs(Eta);
+    TString QLabel = IsFlipped? "_QF":"_QT";
+    vector<TString> CutTagList = {""};
+    for(unsigned int it=0; it<CutTagList.size(); it++){
+      TString CutTag(CutTagList.at(it));
+      FillHist("h1D_PT"+QLabel+CutTag+Label, PT, weight, PtBinEdges.size()-1, &PtBinEdges[0]);
+      FillHist("h1D_Eta"+QLabel+CutTag+Label, Eta, weight, EtaBinEdges.size()-1, &EtaBinEdges[0]);
+      FillHist("h2D_PTEta"+QLabel+CutTag+Label, PT, Eta, weight,
+                PtBinEdges.size()-1, &PtBinEdges[0], EtaBinEdges.size()-1, &EtaBinEdges[0]);
+      FillHist("h2D_PTfEta"+QLabel+CutTag+Label, PT, fEta, weight,
+                PtBinEdges.size()-1, &PtBinEdges[0], fEtaBinEdges.size()-1, &fEtaBinEdges[0]);
+    }
+  }
+  }
+  if(ElRun){
   for(unsigned int ie=0; ie<ElTColl.size(); ie++){
     Electron* El(&ElTColl.at(ie));
     bool IsFlipped=false;
@@ -349,6 +477,7 @@ void MeasCFlipRate::MeasMCCFRate(vector<Muon>& MuTColl, vector<Muon>& MuLColl, v
       FillHist("h2D_PTfEta"+QLabel+CutTag+Label, PT, fEta, weight,
                 PtBinEdges.size()-1, &PtBinEdges[0], fEtaBinEdges.size()-1, &fEtaBinEdges[0]);
     }
+  }
   }
 }
 

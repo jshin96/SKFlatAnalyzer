@@ -5,7 +5,17 @@ void MCFakeStudy::initializeAnalyzer(){
   ElFR=false, MuFR=false;
   LIDOpt=false, MeasMCFR=false, MCClosure=false, CompCheck=false;
   SystRun=false; 
-  SpecTrig=false, NoTrig=false;
+  SpecTrig=false, NoTrig=false, FineBin=false;
+  FkCorr5 = false;
+  FkCorr10 = false;
+  FkCorr15 = false;
+  FkCorr20 = false;
+  FkCorr25 = false;
+  FkCorr30 = false;
+  FineBin = false;
+  FinerBin = false;
+  MatchLowMuElPt = false;
+  SkipOverlap = false;
   for(unsigned int i=0; i<Userflags.size(); i++){
     if(Userflags.at(i).Contains("ElFR"))        ElFR        = true; 
     if(Userflags.at(i).Contains("MuFR"))        MuFR        = true; 
@@ -16,6 +26,16 @@ void MCFakeStudy::initializeAnalyzer(){
     if(Userflags.at(i).Contains("NoTrig"))      NoTrig      = true; 
     if(Userflags.at(i).Contains("SpecTrig"))    SpecTrig    = true; 
     if(Userflags.at(i).Contains("SystRun"))     SystRun     = true; 
+    if(Userflags.at(i).Contains("FineBin"))     FineBin     = true; 
+    if(Userflags.at(i).Contains("FinerBin"))    FinerBin    = true; 
+    if(Userflags.at(i).Contains("MatchLowMuElPt"))    MatchLowMuElPt    = true;
+    if(Userflags.at(i).Contains("SkipOverlap"))    SkipOverlap    = true;
+    if(Userflags.at(i).Contains("FkCorr5"))     FkCorr5     = true;
+    if(Userflags.at(i).Contains("FkCorr10"))    FkCorr10    = true;
+    if(Userflags.at(i).Contains("FkCorr15"))    FkCorr15    = true;
+    if(Userflags.at(i).Contains("FkCorr20"))    FkCorr20    = true;
+    if(Userflags.at(i).Contains("FkCorr25"))    FkCorr25    = true;
+    if(Userflags.at(i).Contains("FkCorr30"))    FkCorr30    = true;
   }
 
   EraShort = GetEraShort();
@@ -49,7 +69,8 @@ void MCFakeStudy::initializeAnalyzer(){
 
   TString AnalyzerPath=getenv("SKFlat_WD"), SKFlatV = getenv("SKFlatV");
   TString FilePath="/data/"+SKFlatV+"/"+GetEra()+"/FakeRate/MCFR/"+(MuFR? "MuFR/":ElFR? "ElFR/":"");
-  FRFile  = new TFile(AnalyzerPath+FilePath+"FR_MC_"+GetEraShort()+".root");
+  if(FineBin){FRFile  = new TFile(AnalyzerPath+FilePath+"FineBin_FR_MC_"+GetEraShort()+".root");}
+  else {FRFile  = new TFile(AnalyzerPath+FilePath+"Original_FR_MC_"+GetEraShort()+".root");}
 
   if(MCClosure){ InitializeReader(MVAReaderL, "BelowMW"); InitializeReader(MVAReaderH, "AboveMW"); }
 }
@@ -256,14 +277,14 @@ void MCFakeStudy::executeEvent(){
       if(MCSample.Contains("QCD")){
         CheckFakeComposition(muonPreColl, electronPreColl, jetPreColl, vMET_T1xy, ev, 
                            "TopHNT", "TopHNLLIsop6SIP5", "TopHNSST", "TopHNSSL_"+GetEraShort(), "TopHNL_"+GetEraShort(), weight, "_MeasSel");
-        CheckFakeComposition(muonPreColl, electronPreColl, jetPreColl, vMET_T1xy, ev, 
-                           "TopHNT", "TopHNLLIsop6SIP5", "TopHNSST", "TopHNSSL_"+GetEraShort(), "TopHNL_"+GetEraShort(), weight, "_MeasSelPOGT");
+//        CheckFakeComposition(muonPreColl, electronPreColl, jetPreColl, vMET_T1xy, ev, 
+//                           "TopHNT", "TopHNLLIsop6SIP5", "TopHNSST", "TopHNSSL_"+GetEraShort(), "TopHNL_"+GetEraShort(), weight, "_MeasSelPOGT");
       }
       else{
         CheckFakeComposition(muonPreColl, electronPreColl, jetPreColl, vMET_T1xy, ev, 
                            "TopHNT", "TopHNLLIsop6SIP5", "TopHNSST", "TopHNSSL_"+GetEraShort(), "TopHNL_"+GetEraShort(), weight, "_SRSel");
-        CheckFakeComposition(muonPreColl, electronPreColl, jetPreColl, vMET_T1xy, ev, 
-                           "TopHNT", "TopHNLLIsop6SIP5", "TopHNSST", "TopHNSSL_"+GetEraShort(), "TopHNL_"+GetEraShort(), weight, "_SRSelPOGT");
+//        CheckFakeComposition(muonPreColl, electronPreColl, jetPreColl, vMET_T1xy, ev, 
+//                           "TopHNT", "TopHNLLIsop6SIP5", "TopHNSST", "TopHNSSL_"+GetEraShort(), "TopHNL_"+GetEraShort(), weight, "_SRSelPOGT");
       }
     }
   }
@@ -279,7 +300,7 @@ void MCFakeStudy::executeEvent(){
       vector<double> PtEdges={10., 15., 20., 25., 35., 50., 70., 100., 200.};
 
   
-      bool FullScanning=true, CheckTau=false, IDVarDist=false, CvCheck=false, IDPerfCheck=false, SpecificWP=true;
+      bool FullScanning=false, CheckTau=false, IDVarDist=false, CvCheck=false, IDPerfCheck=false, SpecificWP=false;
       if(SpecTrig){ FullScanning=false; CvCheck=true; }
       if(CvCheck){
         CheckSelectionEfficiency(muonPreColl, electronPreColl, jetNoVetoColl, bjetNoVetoColl, vMET, ev,
@@ -486,17 +507,29 @@ void MCFakeStudy::CheckFakeComposition(vector<Muon>& MuRawColl, vector<Electron>
     int  SrcType = GetFakeLepSrcType(*Mu, JetRawColl);
     int  LepType = GetLeptonType_JH(*Mu,truthColl);
     float fEta   = fabs(Mu->Eta());
+    vector<double> fEtaEdges     = {0., 0.9, 1.6, 2.4};
+    vector<double> PTEdges       = {10., 15., 20., 30., 50.};
+    float PT   = Mu->Pt();
     if(ApplyPOGT && !PassPOG  ) continue;
     if(LepType>0 or LepType<-4) continue;
-    TString EtaReg = fEta<0.9? "Reg1":fEta<1.6? "Reg2":"Reg3";
+    TString EtaReg = fEta<0.9? "EtaReg1":fEta<1.6? "EtaReg2":"EtaReg3";
+    TString PtReg = PT<15? "PtReg1":PT<20? "PtReg2": PT<30? "PtReg3":"PtReg4";
 
-    vector<TString> TagList = {Label, EtaReg+Label};
-    if(PassTID){ TagList.push_back("_TID"+Label); TagList.push_back("_TID"+EtaReg+Label); }
+    vector<TString> TagList = {Label, EtaReg+Label, PtReg+Label, EtaReg+PtReg+Label};
+    if(PassTID){ TagList.push_back("_TID"+Label); TagList.push_back("_TID"+EtaReg+Label);TagList.push_back("_TID"+PtReg+Label); TagList.push_back("_TID"+EtaReg+PtReg+Label);}
     for(unsigned itag=0; itag<TagList.size(); itag++){
       TString Tag(TagList.at(itag));
       FillHist("FakeLepType_Mu"+Tag+Label, LepType, weight, 5, -4., 1.);
       FillHist("FakeSrcType_Mu"+Tag+Label, SrcType, weight, 5, -1., 4.);
       FillHist("FakeLepTSrcT_Mu"+Tag+Label, LepType, SrcType, weight, 5, -4., 1., 5, -1., 4.);
+      if(SrcType == 1){
+        FillHist("FakeLightLep_MiniRelIso_Mu"+Tag+Label, Mu->MiniRelIso(), weight, 50, 0, 1.);
+        FillHist("FakeLightLep_SIP3D_Mu"+Tag+Label, Mu->SIP3D(), weight, 10, 0, 10);
+      }
+      else if (SrcType > 1){
+        FillHist("FakeHeavyLep_MiniRelIso_Mu"+Tag+Label, Mu->MiniRelIso(), weight, 50, 0, 1.);
+        FillHist("FakeHeavyLep_SIP3D_Mu"+Tag+Label, Mu->SIP3D(), weight, 10, 0, 10);
+      }
     }
   }
 
@@ -1322,20 +1355,42 @@ void MCFakeStudy::EmulQCDFRMeas(vector<Muon>& MuRawColl, vector<Electron>& ElRaw
     TString EtaReg = fEta<0.9? "MB": fEta<1.6? "MO": "ME";
     vector<double> fEtaEdges     = {0., 0.9, 1.6, 2.4};
     vector<double> PTEdges       = {10., 15., 20., 30., 50.};
-
+    if(FineBin){
+      PTEdges       = {10., 12.5, 15., 17.5, 20., 25., 30., 50.};
+    }
+    if(FinerBin){
+      PTEdges       = {10., 11.5, 13., 15., 17.5, 20., 25., 30., 50.};
+    }
     if(!MCSample.Contains("QCD") && FakeSrcType==-1) continue;
     if(PTCorr<MinPtMu) continue;
 
     vector<TString> EtaList  = {"", "MB", "MO", "ME"};
     vector<TString> FlavList = {"_All", "_BjMatch", "_CjMatch", "_LjMatch", "_NoMatch"};
+
+    TString PtReg = "";
+    if(PTCorr<15 && PTCorr >= 10) {PtReg="PtReg1";}
+    else if(PTCorr<20 && PTCorr >= 15) {PtReg="PtReg2";}
+    else if(PTCorr<30 && PTCorr >= 20) {PtReg="PtReg3";}
+    else if(PTCorr<50 && PTCorr >= 30) {PtReg="PtReg4";}
+    else {PtReg = "Other";}
+
     for(unsigned int iEta=0; iEta<EtaList.size(); iEta++){
-    for(unsigned int iFlav=0; iFlav<FlavList.size(); iFlav++){
       if(  EtaList.at(iEta)!=""     &&   EtaList.at(iEta)!=EtaReg  ) continue;
+      TString Eta=EtaList.at(iEta);
+    for(unsigned int iFlav=0; iFlav<FlavList.size(); iFlav++){
       if(FlavList.at(iFlav)!="_All" && FlavList.at(iFlav)!=JFlavTag) continue;
-      TString Eta=EtaList.at(iEta), Flav=FlavList.at(iFlav);
+      TString Flav=FlavList.at(iFlav);
+      FillHist("Mu"+Eta+"_"+Flav+"_MiniRelIso_"+PtReg+"_FR1D"+Label, Mu->MiniRelIso(), weight, 50, 0, 1.);
+      FillHist("Mu"+Eta+"_"+Flav+"_SIP3D_"+PtReg+"_FR1D"+Label, Mu->SIP3D(), weight, 10, 0, 10);
+      FillHist("Mu"+Eta+"_"+Flav+"_MiniRelIso_FR2D"+Label, PTCorr,Mu->MiniRelIso(), weight,PTEdges.size()-1, &PTEdges[0], 10, 0, 10);
+      FillHist("Mu"+Eta+"_"+Flav+"_SIP3D_FR2D"+Label, PTCorr,Mu->SIP3D(), weight,PTEdges.size()-1, &PTEdges[0], 10, 0, 10);
       FillHist("Mu"+Eta+"SumW"+Flav+"_PT_FR1D"+Label, PTCorr, weight, PTEdges.size()-1, &PTEdges[0]);   
       FillHist("MuSumW"+Flav+"_PTfEta2D"+Label, PTCorr, fEta, weight, PTEdges.size()-1, &PTEdges[0], fEtaEdges.size()-1, &fEtaEdges[0]);
       if(PassTight){
+        FillHist("Mu"+Eta+"_"+Flav+"TID_MiniRelIso_"+PtReg+"_FR1D"+Label, Mu->MiniRelIso(), weight, 50, 0, 1.);
+        FillHist("Mu"+Eta+"_"+Flav+"TID_SIP3D_"+PtReg+"_FR1D"+Label, Mu->SIP3D(), weight, 10, 0, 10);
+        FillHist("Mu"+Eta+"_"+Flav+"TID_MiniRelIso_FR2D"+Label, PTCorr,Mu->MiniRelIso(), weight,PTEdges.size()-1, &PTEdges[0], 50, 0, 1.);
+        FillHist("Mu"+Eta+"_"+Flav+"TID_SIP3D_FR2D"+Label, PTCorr,Mu->SIP3D(), weight,PTEdges.size()-1, &PTEdges[0], 10, 0, 10);
         FillHist("Mu"+Eta+"IDSumW"+Flav+"_PT_FR1D"+Label, PTCorr, weight, PTEdges.size()-1, &PTEdges[0]);
         FillHist("MuIDSumW"+Flav+"_PTfEta2D"+Label, PTCorr, fEta, weight, PTEdges.size()-1, &PTEdges[0], fEtaEdges.size()-1, &fEtaEdges[0]);
       }
@@ -1366,6 +1421,12 @@ void MCFakeStudy::EmulQCDFRMeas(vector<Muon>& MuRawColl, vector<Electron>& ElRaw
     TString EtaReg = fEta<0.8? "B1": fEta<1.479? "B2": "E";
     vector<double> fEtaEdges = {0., 0.8, 1.5, 2.5};
     vector<double> PTEdges   = {10., 15., 20., 25., 35., 50., 100., 200.};
+    if(FineBin){
+      PTEdges       = {10., 12.5, 15., 17.5, 20., 25., 35., 50., 100., 200.};
+    }
+    if(FinerBin){
+      PTEdges       = {10., 11.5, 13., 15., 17.5, 20., 25., 35., 50., 100., 200.};
+    }
 
     if(PTCorr<MinPtEl) continue;
 
@@ -1394,9 +1455,12 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
 {
 
   InitializeTreeVars();
-  vector<Muon>     MuTColl  = SelectMuons    (MuRawColl, MuTID, 10., 2.4);
+
+  double MuMinPT = 10.;
+  if (MatchLowMuElPt) {MuMinPT = 15.;}
+  vector<Muon>     MuTColl  = SelectMuons    (MuRawColl, MuTID, MuMinPT, 2.4);
   vector<Electron> ElTColl  = SelectElectrons(ElRawColl, ElTID, 15., 2.5);
-  vector<Muon>     MuLColl  = SelectMuons    (MuRawColl, MuLID, 10., 2.4);
+  vector<Muon>     MuLColl  = SelectMuons    (MuRawColl, MuLID, MuMinPT, 2.4);
   vector<Electron> ElLColl  = SelectElectrons(ElRawColl, ElLID, 15., 2.5);
   vector<Electron> ElVColl  = SelectElectrons(ElRawColl, ElVID, 10., 2.5);
   vector<Jet>      JetColl  = SelectPUJets     (JetRawColl, "MediumPileupJetVeto", 25., 2.4, GetEraShort());
@@ -1447,21 +1511,27 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
       }
     }
   }
-
-//  if(B_overlap){
-//    if(MuFR){
-//      if (GetEraShort() == "2018") { FR_MCCorr = 0.84;}
-//      else if (GetEraShort() == "2017") { FR_MCCorr = 0.84;}
-//      else if (GetEraShort() == "2016a") { FR_MCCorr = 0.85;}
-//      else if (GetEraShort() == "2016b") { FR_MCCorr = 0.85;}
-//    }
-//    else if(ElFR){
-//      if (GetEraShort() == "2018") { FR_MCCorr = 0.86;}
-//      else if (GetEraShort() == "2017") { FR_MCCorr = 0.81;}
-//      else if (GetEraShort() == "2016a") { FR_MCCorr = 0.86;}
-//      else if (GetEraShort() == "2016b") { FR_MCCorr = 0.85;}
-//    }
-//  }
+  float FkCorr=0.00;
+  if (FkCorr5) {FkCorr=0.05;}
+  if (FkCorr10) {FkCorr=0.10;}
+  if (FkCorr15) {FkCorr=0.15;}
+  if (FkCorr20) {FkCorr=0.20;}
+  if (FkCorr25) {FkCorr=0.25;}
+  if (FkCorr30) {FkCorr=0.30;}
+  if(B_overlap && !SkipOverlap){
+    if(MuFR){
+      if (GetEraShort() == "2018") { FR_MCCorr = 0.94;}
+      else if (GetEraShort() == "2017") { FR_MCCorr = 0.96;}
+      else if (GetEraShort() == "2016a") { FR_MCCorr = 0.97;}
+      else if (GetEraShort() == "2016b") { FR_MCCorr = 0.96;}
+    }
+    if(ElFR){
+      if (GetEraShort() == "2018") { FR_MCCorr = 0.86;}
+      else if (GetEraShort() == "2017") { FR_MCCorr = 0.81;}
+      else if (GetEraShort() == "2016a") { FR_MCCorr = 0.86;}
+      else if (GetEraShort() == "2016b") { FR_MCCorr = 0.85;}
+    }
+  }
   TString FRProc = Label.Contains("FRTT")? "TT_powheg":Label.Contains("FRQCD")? "QCD":"";
   TString MeasSel = Option.Contains("MeasSel")? "_QCDMeasSel":""; 
   TString TrigStr = Option.Contains("Trig")?    "_Trig":"";
@@ -1478,10 +1548,11 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
   bool DrawMVA = true;
   int NMuT=MuTColl.size(), NMuL=MuLColl.size(), NElT=ElTColl.size(), NElL=ElLColl.size(), NElV=ElVColl.size();
   vector<Muon> MuConeColl; vector<Electron> ElConeColl;
+  FillHist("FR_MCCorr"+Label, FR_MCCorr , weight , 21, 0., 1.05);
+  cout << FR_MCCorr << endl;
   if( NElL!=NElV ) return;
   if( !((NMuL==2 && NElL==0) or (NMuL==0 && NElL==2)) ) return;
   if(NMuL==2 && MuFR){
-    FillHist("Mu_FR_MCCorr"+Label, FR_MCCorr, 1, 2, 0., 1.99);
     int aSumQ = abs(SumCharge(MuLColl));
     if(aSumQ==0) return;
     if(!(MuLColl.at(0).Pt()>20. && MuLColl.at(1).Pt()>10.)) return;
@@ -1501,15 +1572,15 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
     if(NMuT==NMuL && NElT==NElL){ Label="_Obs"+Label; }
     else                        { Label="_Exp"+Label; weight*=FRweight; }
 
-    float TightIso=0.1;
-    for(unsigned int im=0; im<MuLColl.size(); im++){
-      Muon TmpMu(MuLColl.at(im));
-      float RelIso = MuLColl.at(im).MiniRelIso();
-      float PTCorr = MuLColl.at(im).CalcPtCone(RelIso,TightIso), PT=MuLColl.at(im).Pt();
-      if(ConeBasis && RelIso>TightIso) TmpMu *= PTCorr/PT;
-      MuConeColl.push_back(TmpMu);
-    }
-
+//    float TightIso=0.1;
+//    for(unsigned int im=0; im<MuLColl.size() && ConeBasis; im++){
+//      Muon TmpMu(MuLColl.at(im));
+//      float RelIso = MuLColl.at(im).MiniRelIso();
+//      float PTCorr = MuLColl.at(im).CalcPtCone(RelIso,TightIso), PT=MuLColl.at(im).Pt();
+//      if(RelIso>TightIso) TmpMu *= PTCorr/PT;
+//      MuConeColl.push_back(TmpMu);
+//    }
+    MuConeColl = MuLColl;
     vector<Jet> BCandColl = BJetColl.size()>1? BJetColl:JetColl;
     vector<Jet> NonBJetColl = SelLightJets(JetColl, jtps.at(0));
 
@@ -1624,7 +1695,7 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
     }
   }
   if(NElL==2 && ElFR){
-    FillHist("El_FR_MCCorr"+Label, FR_MCCorr, 1, 2, 0., 1.99);
+    FillHist("El_FR"+Label, FR_MCCorr , weight , 21, 0., 1.05);
     int aSumQ = abs(SumCharge(ElLColl));
     if(aSumQ==0) return;
     if(!( ElLColl.at(0).Pt()>25 && ElLColl.at(1).Pt()>15 )) return;
@@ -1645,15 +1716,15 @@ void MCFakeStudy::CheckMCClosure(vector<Muon>& MuRawColl, vector<Electron>& ElRa
     if(NMuT==NMuL && NElT==NElL){ Label="_Obs"+Label; }
     else                        { Label="_Exp"+Label; weight*=FRweight; }
 
-    float TightIso=0.1;
-    for(unsigned int ie=0; ie<ElLColl.size() && ConeBasis; ie++){
-      Electron TmpEl(ElLColl.at(ie));
-      float RelIso = ElLColl.at(ie).MiniRelIso();
-      float PTCorr = ElLColl.at(ie).CalcPtCone(RelIso,TightIso), PT=ElLColl.at(ie).Pt();
-      if(RelIso>TightIso) TmpEl *= PTCorr/PT;
-      ElConeColl.push_back(TmpEl);
-    }
-
+//    float TightIso=0.1;
+//    for(unsigned int ie=0; ie<ElLColl.size() && ConeBasis; ie++){
+//      Electron TmpEl(ElLColl.at(ie));
+//      float RelIso = ElLColl.at(ie).MiniRelIso();
+//      float PTCorr = ElLColl.at(ie).CalcPtCone(RelIso,TightIso), PT=ElLColl.at(ie).Pt();
+//      if(RelIso>TightIso) TmpEl *= PTCorr/PT;
+//      ElConeColl.push_back(TmpEl);
+//    }
+    ElConeColl = ElLColl;
     if(!( fabs( (ElConeColl.at(0)+ElConeColl.at(1)).M()-91.2 )>10 )) return;
 
 

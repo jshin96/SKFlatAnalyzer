@@ -100,7 +100,7 @@ std::vector<Muon> AnalyzerCore::GetAllMuons(){
     mu.SetCharge(muon_charge->at(i));
     mu.SetMiniAODPt(muon_pt->at(i));
     mu.SetMiniAODTunePPt(muon_TuneP_pt->at(i));
-
+    mu.SetUncorrectedPt(muon_pt->at(i));
     double rc = muon_roch_sf->at(i);
     double rc_err = muon_roch_sf_up->at(i)-rc;
     //==== For the Rochester corection, up and down err are the same
@@ -1970,6 +1970,42 @@ void AnalyzerCore::FillHist(TString histname,
 
 }
 
+
+void AnalyzerCore::FillHist(TString histname,
+                double value_x, double value_y,
+                double weight,
+                int n_binx, double *xbins,
+                int n_biny, double y_min, double y_max){
+
+  TH2D *this_hist = GetHist2D(histname);
+  if( !this_hist ){
+    this_hist = new TH2D(histname, "", n_binx, xbins, n_biny, y_min, y_max);
+    this_hist->SetDirectory(NULL);
+    maphist_TH2D[histname] = this_hist;
+  }
+
+  this_hist->Fill(value_x, value_y, weight);
+
+}
+
+void AnalyzerCore::FillHist(TString histname,
+                double value_x, double value_y,
+                double weight,
+                int n_binx, double x_min, double x_max,
+                int n_biny, double *ybins){
+
+  TH2D *this_hist = GetHist2D(histname);
+  if( !this_hist ){
+    this_hist = new TH2D(histname, "", n_binx, x_min, x_max, n_biny, ybins);
+    this_hist->SetDirectory(NULL);
+    maphist_TH2D[histname] = this_hist;
+  }
+
+  this_hist->Fill(value_x, value_y, weight);
+
+}
+
+
 void AnalyzerCore::FillHist(TString histname,
                 double value_x, double value_y,
                 double weight,
@@ -2550,7 +2586,7 @@ float AnalyzerCore::GetKFactor(){
     // https://doi.org/10.1016/j.physletb.2014.06.056
     weight = 1.16; 
   }
-  else if(MCSample.Contains("ggZZto")){
+  else if(MCSample.Contains("GluGluToZZ")){
     //  1.67 brings gg->ZZ from LO to NLO (http://arxiv.org/abs/1509.06734)
     return 1.67;
   }
@@ -2973,6 +3009,28 @@ int AnalyzerCore::GetPartonType_JH(int TruthIdx, std::vector<Gen>& TruthColl){
 
   return PartonType;
 }
+
+float AnalyzerCore::GetMET2ST( std::vector<Electron> electrons, std::vector<Muon> muons, std::vector<Jet> jets, Particle met){
+  double ST = GetST(electrons, muons, jets,met);
+  double met2_st = pow(met.Pt(),2.)/ ST;
+  return met2_st;
+}
+
+
+float AnalyzerCore::GetST( std::vector<Electron> electrons, std::vector<Muon> muons, std::vector<Jet> jets,  Particle met){
+
+  double _st(0.);
+  for(unsigned int i=0; i<jets.size(); i++)      _st +=  jets.at(i).Pt();
+  for(unsigned int i=0; i<muons.size(); i++)     _st +=  muons[i].Pt();
+  for(unsigned int i=0; i<electrons.size(); i++) _st +=  electrons[i].Pt();
+  _st += met.Pt();
+  return _st;
+
+}
+
+
+
+
 
 
 int AnalyzerCore::GetPrElType_InSameSCRange(int TruthIdx, std::vector<Gen>& TruthColl, TString Option){
@@ -3565,4 +3623,38 @@ void AnalyzerCore::FillHist(TString histname, double value, double weight, int n
   }
 
   return;
+}
+
+
+Particle AnalyzerCore::UpdateMETSyst(TString param, const Particle& METv, std::vector<Muon> muons, std::vector<Electron> electrons, std::vector<Electron> electrons_uncorr){
+
+  double met_x = METv.Px();
+  double met_y = METv.Py();
+
+  double px_orig(0.), py_orig(0.),px_corrected(0.), py_corrected(0.);
+
+  if(param.Contains("Muon")){
+    for(unsigned int i=0; i<muons.size(); i++){
+      px_orig += muons.at(i).UncorrectedPt() * TMath::Cos(muons.at(i).Phi());
+      py_orig += muons.at(i).UncorrectedPt() * TMath::Sin(muons.at(i).Phi());
+      px_corrected += muons.at(i).Px();
+      py_corrected += muons.at(i).Py();
+    }
+  }
+  if(param.Contains("Electron")){
+    if (electrons.size()!=electrons_uncorr.size()) {return METv;}
+    for(unsigned int i=0; i<electrons.size(); i++){
+      px_corrected += electrons.at(i).Px();
+      py_corrected += electrons.at(i).Py();
+      px_orig += electrons_uncorr.at(i).Px();
+      py_orig += electrons_uncorr.at(i).Py();
+    }
+  }
+  met_x = met_x + px_orig - px_corrected;
+  met_y = met_y + py_orig - py_corrected;
+
+  Particle METout;
+  METout.SetPxPyPzE(met_x,met_y,0,sqrt(met_x*met_x+met_y*met_y));
+  return METout;
+
 }

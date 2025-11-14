@@ -18,6 +18,8 @@ Muon::Muon() : Lepton() {
   j_lowptMVA = -999.;
   j_softMVA = -999.;
   j_trackerLayers = 0;
+  j_unCorrPt = -999;
+
 }
 
 Muon::~Muon(){
@@ -48,6 +50,11 @@ void Muon::SetIso(double ch04, double nh04, double ph04, double pu04, double trk
   j_trkiso = trkiso;
   CalcPFRelIso();
 }
+
+void Muon::SetUncorrectedPt(double uncorrPt){
+  j_unCorrPt = uncorrPt;
+}
+
 
 void Muon::SetChi2(double chi2){
   j_chi2 = chi2;
